@@ -237,6 +237,11 @@ class RetryAfter(TelegramError):
         else:
             super().__init__(f"Flood control exceeded. Retry in {self.retry_after!s}")
 
+    @property
+    def retry_after(self) -> int | dtm.timedelta:  # noqa: D102
+        return get_timedelta_value(  # type: ignore[return-value]
+            self._retry_after, attribute="retry_after"
+        )
 
     def __reduce__(self) -> tuple[type, tuple[float]]:  # type: ignore[override]
         # Until support for `int` time periods is lifted, leave pickle behaviour the same

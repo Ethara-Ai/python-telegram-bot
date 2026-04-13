@@ -104,7 +104,7 @@ class BaseUpdateProcessor(AbstractAsyncContextManager["BaseUpdateProcessor"], AB
     @property
     def max_concurrent_updates(self) -> int:
         """:obj:`int`: The maximum number of updates that can be processed concurrently."""
-        pass
+        return self._max_concurrent_updates
 
     @property
     def current_concurrent_updates(self) -> int:
@@ -116,7 +116,7 @@ class BaseUpdateProcessor(AbstractAsyncContextManager["BaseUpdateProcessor"], AB
 
         .. versionadded:: 21.11
         """
-        pass
+        return self.max_concurrent_updates - self._semaphore.current_value
 
     @abstractmethod
     async def do_process_update(
@@ -167,7 +167,8 @@ class BaseUpdateProcessor(AbstractAsyncContextManager["BaseUpdateProcessor"], AB
             coroutine (:term:`Awaitable`): The coroutine that will be awaited to process the
                 update.
         """
-        pass
+        async with self._semaphore:
+            await self.do_process_update(update, coroutine)
 
 
 class SimpleUpdateProcessor(BaseUpdateProcessor):
@@ -192,7 +193,7 @@ class SimpleUpdateProcessor(BaseUpdateProcessor):
             coroutine (:term:`Awaitable`): The coroutine that will be awaited to process the
                 update.
         """
-        pass
+        await coroutine
 
     async def initialize(self) -> None:
         """Does nothing."""
