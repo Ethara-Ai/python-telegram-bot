@@ -162,6 +162,12 @@ class _TokenDict(dict):
         raise KeyError(f"Base URL string contains unsupported insertion: {key}")
 
 
+def _parse_base_url(value: BaseUrl, token: str) -> str:
+    if callable(value):
+        return value(token)
+    if any(insertion in value for insertion in _INSERTION_STRINGS):
+        return value.format_map(_TokenDict(token))
+    return value + token
 
 
 class Bot(TelegramObject, contextlib.AbstractAsyncContextManager["Bot"]):
@@ -605,7 +611,6 @@ class Bot(TelegramObject, contextlib.AbstractAsyncContextManager["Bot"]):
         for ExtBot to add 1 level to all warning calls.
         """
         pass
-
 
     def _insert_defaults(self, data: dict[str, object]) -> None:
         """This method is here to make ext.Defaults work. Because we need to be able to tell

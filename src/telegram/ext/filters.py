@@ -250,14 +250,20 @@ class BaseFilter:
     @property
     def data_filter(self) -> bool:
         """:obj:`bool`: Whether this filter is a data filter."""
-        pass
+        return self._data_filter
 
+    @data_filter.setter
+    def data_filter(self, value: bool) -> None:
+        self._data_filter = value
 
     @property
     def name(self) -> str:
         """:obj:`str`: Name for this filter."""
-        pass
+        return self._name
 
+    @name.setter
+    def name(self, name: str) -> None:
+        self._name = name
 
     def check_update(self, update: Update) -> bool | FilterDataDict | None:
         """Checks if the specified update should be handled by this filter.
@@ -373,7 +379,9 @@ class _InvertedFilter(UpdateFilter):
         super().__init__()
         self.inv_filter = f
 
-
+    @property
+    def name(self) -> str:
+        return f"<inverted {self.inv_filter}>"
 
     @name.setter
     def name(self, _: str) -> NoReturn:
@@ -413,9 +421,14 @@ class _MergedFilter(UpdateFilter):
         if self.or_filter and not isinstance(self.and_filter, bool) and self.or_filter.data_filter:
             self.data_filter = True
 
-
     # pylint: disable=too-many-return-statements
 
+    @property
+    def name(self) -> str:
+        return (
+            f"<{self.base_filter} {'and' if self.and_filter else 'or'} "
+            f"{self.and_filter or self.or_filter}>"
+        )
 
     @name.setter
     def name(self, _: str) -> NoReturn:
@@ -440,7 +453,9 @@ class _XORFilter(UpdateFilter):
         self.xor_filter = xor_filter
         self.merged_filter = (base_filter & ~xor_filter) | (~base_filter & xor_filter)
 
-
+    @property
+    def name(self) -> str:
+        return f"<{self.base_filter} xor {self.xor_filter}>"
 
     @name.setter
     def name(self, _: str) -> NoReturn:
@@ -451,14 +466,12 @@ class _All(MessageFilter):
     __slots__ = ()
 
 
-
 ALL = _All(name="filters.ALL")  # pylint: disable=invalid-name
 """All Messages."""
 
 
 class _Animation(MessageFilter):
     __slots__ = ()
-
 
 
 ANIMATION = _Animation(name="filters.ANIMATION")
@@ -469,7 +482,6 @@ class _Attachment(MessageFilter):
     __slots__ = ()
 
 
-
 ATTACHMENT = _Attachment(name="filters.ATTACHMENT")
 """Messages that contain :meth:`telegram.Message.effective_attachment`.
 
@@ -478,7 +490,6 @@ ATTACHMENT = _Attachment(name="filters.ATTACHMENT")
 
 class _Audio(MessageFilter):
     __slots__ = ()
-
 
 
 AUDIO = _Audio(name="filters.AUDIO")  # pylint: disable=invalid-name
@@ -505,7 +516,6 @@ class Caption(MessageFilter):
     def __init__(self, strings: list[str] | tuple[str, ...] | None = None):
         self.strings: Sequence[str] | None = strings
         super().__init__(name=f"filters.Caption({strings})" if strings else "filters.CAPTION")
-
 
 
 CAPTION = Caption()
@@ -537,7 +547,6 @@ class CaptionEntity(MessageFilter):
         super().__init__(name=f"filters.CaptionEntity({self.entity_type})")
 
 
-
 class CaptionRegex(MessageFilter):
     """
     Filters updates by searching for an occurrence of :paramref:`~CaptionRegex.pattern` in the
@@ -564,7 +573,6 @@ class CaptionRegex(MessageFilter):
             pattern = re.compile(pattern)
         self.pattern: Pattern[str] = pattern
         super().__init__(name=f"filters.CaptionRegex({self.pattern})", data_filter=True)
-
 
 
 class _ChatUserBaseFilter(MessageFilter, ABC):
@@ -596,10 +604,6 @@ class _ChatUserBaseFilter(MessageFilter, ABC):
     @abstractmethod
     def _get_chat_or_user(self, message: Message) -> TGChat | TGUser | None: ...
 
-
-
-
-
     @property
     def usernames(self) -> frozenset[str]:
         """Which username(s) to allow through.
@@ -616,7 +620,6 @@ class _ChatUserBaseFilter(MessageFilter, ABC):
         """
         pass
 
-
     def add_usernames(self, username: SCT[str]) -> None:
         """
         Add one or more chats to the allowed usernames.
@@ -626,7 +629,6 @@ class _ChatUserBaseFilter(MessageFilter, ABC):
                 allow through. Leading ``'@'`` s in usernames will be discarded.
         """
         pass
-
 
     def remove_usernames(self, username: SCT[str]) -> None:
         """
@@ -638,8 +640,12 @@ class _ChatUserBaseFilter(MessageFilter, ABC):
         """
         pass
 
-
-
+    @property
+    def name(self) -> str:
+        return (
+            f"filters.{self.__class__.__name__}("
+            f"{', '.join(str(s) for s in (self.usernames or self.chat_ids))})"
+        )
 
     @name.setter
     def name(self, _: str) -> NoReturn:
@@ -679,7 +685,6 @@ class Chat(_ChatUserBaseFilter):
 
     __slots__ = ()
 
-
     def add_chat_ids(self, chat_id: SCT[int]) -> None:
         """
         Add one or more chats to the allowed chat ids.
@@ -717,13 +722,11 @@ class ChatType:  # A convenience namespace for Chat types.
     class _Channel(MessageFilter):
         __slots__ = ()
 
-
     CHANNEL = _Channel(name="filters.ChatType.CHANNEL")
     """Updates from channel."""
 
     class _Group(MessageFilter):
         __slots__ = ()
-
 
     GROUP = _Group(name="filters.ChatType.GROUP")
     """Updates from group."""
@@ -731,13 +734,11 @@ class ChatType:  # A convenience namespace for Chat types.
     class _Groups(MessageFilter):
         __slots__ = ()
 
-
     GROUPS = _Groups(name="filters.ChatType.GROUPS")
     """Update from group *or* supergroup."""
 
     class _Private(MessageFilter):
         __slots__ = ()
-
 
     PRIVATE = _Private(name="filters.ChatType.PRIVATE")
     """Update from private chats."""
@@ -745,14 +746,12 @@ class ChatType:  # A convenience namespace for Chat types.
     class _SuperGroup(MessageFilter):
         __slots__ = ()
 
-
     SUPERGROUP = _SuperGroup(name="filters.ChatType.SUPERGROUP")
     """Updates from supergroup."""
 
 
 class _Checklist(MessageFilter):
     __slots__ = ()
-
 
 
 CHECKLIST = _Checklist(name="filters.CHECKLIST")
@@ -789,7 +788,6 @@ class Command(MessageFilter):
         super().__init__(f"filters.Command({only_start})" if not only_start else "filters.COMMAND")
 
 
-
 COMMAND = Command()
 """Shortcut for :class:`telegram.ext.filters.Command()`.
 
@@ -801,7 +799,6 @@ Examples:
 
 class _Contact(MessageFilter):
     __slots__ = ()
-
 
 
 CONTACT = _Contact(name="filters.CONTACT")
@@ -824,7 +821,6 @@ class _Dice(MessageFilter):
             self.name = f"filters.Dice({self.values})"
         else:
             self.name = "filters.Dice.ALL"
-
 
 
 class Dice(_Dice):
@@ -958,7 +954,6 @@ class _DirectMessages(UpdateFilter):
     __slots__ = ()
 
 
-
 DIRECT_MESSAGES = _DirectMessages(name="filters.DIRECT_MESSAGES")
 """Filter chats which are the direct messages for a channel.
 
@@ -986,7 +981,6 @@ class Document:
     class _All(MessageFilter):
         __slots__ = ()
 
-
     ALL = _All(name="filters.Document.ALL")
     """Messages that contain a :attr:`telegram.Message.document`."""
 
@@ -1011,7 +1005,6 @@ class Document:
         def __init__(self, category: str):
             self._category = category
             super().__init__(name=f"filters.Document.Category('{self._category}')")
-
 
     APPLICATION = Category("application/")
     """Use as ``filters.Document.APPLICATION``."""
@@ -1072,7 +1065,6 @@ class Document:
                 self._file_extension = f".{file_extension}".lower()
                 self.name = f"filters.Document.FileExtension({file_extension.lower()!r})"
 
-
     class MimeType(MessageFilter):
         """This Filter filters documents by their mime-type attribute.
 
@@ -1093,7 +1085,6 @@ class Document:
         def __init__(self, mimetype: str):
             self.mimetype: str = mimetype
             super().__init__(name=f"filters.Document.MimeType('{self.mimetype}')")
-
 
     APK = MimeType("application/vnd.android.package-archive")
     """Use as ``filters.Document.APK``."""
@@ -1133,7 +1124,6 @@ class _EffectId(MessageFilter):
     __slots__ = ()
 
 
-
 EFFECT_ID = _EffectId(name="filters.EFFECT_ID")
 """Messages that contain :attr:`telegram.Message.effect_id`.
 
@@ -1161,10 +1151,8 @@ class Entity(MessageFilter):
         super().__init__(name=f"filters.Entity({self.entity_type})")
 
 
-
 class _Forum(UpdateFilter):
     __slots__ = ()
-
 
 
 FORUM = _Forum(name="filters.FORUM")
@@ -1176,7 +1164,6 @@ FORUM = _Forum(name="filters.FORUM")
 
 class _Forwarded(MessageFilter):
     __slots__ = ()
-
 
 
 FORWARDED = _Forwarded(name="filters.FORWARDED")
@@ -1239,7 +1226,6 @@ class ForwardedFrom(_ChatUserBaseFilter):
 
     __slots__ = ()
 
-
     def add_chat_ids(self, chat_id: SCT[int]) -> None:
         """
         Add one or more chats to the allowed chat ids.
@@ -1265,14 +1251,12 @@ class _Game(MessageFilter):
     __slots__ = ()
 
 
-
 GAME = _Game(name="filters.GAME")
 """Messages that contain :attr:`telegram.Message.game`."""
 
 
 class _Giveaway(MessageFilter):
     __slots__ = ()
-
 
 
 GIVEAWAY = _Giveaway(name="filters.GIVEAWAY")
@@ -1283,14 +1267,12 @@ class _GiveawayWinners(MessageFilter):
     __slots__ = ()
 
 
-
 GIVEAWAY_WINNERS = _GiveawayWinners(name="filters.GIVEAWAY_WINNERS")
 """Messages that contain :attr:`telegram.Message.giveaway_winners`."""
 
 
 class _HasMediaSpoiler(MessageFilter):
     __slots__ = ()
-
 
 
 HAS_MEDIA_SPOILER = _HasMediaSpoiler(name="filters.HAS_MEDIA_SPOILER")
@@ -1304,7 +1286,6 @@ class _HasProtectedContent(MessageFilter):
     __slots__ = ()
 
 
-
 HAS_PROTECTED_CONTENT = _HasProtectedContent(name="filters.HAS_PROTECTED_CONTENT")
 """Messages that contain :attr:`telegram.Message.has_protected_content`.
 
@@ -1316,14 +1297,12 @@ class _Invoice(MessageFilter):
     __slots__ = ()
 
 
-
 INVOICE = _Invoice(name="filters.INVOICE")
 """Messages that contain :attr:`telegram.Message.invoice`."""
 
 
 class _IsAutomaticForward(MessageFilter):
     __slots__ = ()
-
 
 
 IS_AUTOMATIC_FORWARD = _IsAutomaticForward(name="filters.IS_AUTOMATIC_FORWARD")
@@ -1337,7 +1316,6 @@ class _IsTopicMessage(MessageFilter):
     __slots__ = ()
 
 
-
 IS_TOPIC_MESSAGE = _IsTopicMessage(name="filters.IS_TOPIC_MESSAGE")
 """Messages that contain :attr:`telegram.Message.is_topic_message`.
 
@@ -1347,7 +1325,6 @@ IS_TOPIC_MESSAGE = _IsTopicMessage(name="filters.IS_TOPIC_MESSAGE")
 
 class _IsFromOffline(MessageFilter):
     __slots__ = ()
-
 
 
 IS_FROM_OFFLINE = _IsFromOffline(name="filters.IS_FROM_OFFLINE")
@@ -1387,10 +1364,8 @@ class Language(MessageFilter):
         super().__init__(name=f"filters.Language({self.lang})")
 
 
-
 class _Location(MessageFilter):
     __slots__ = ()
-
 
 
 LOCATION = _Location(name="filters.LOCATION")
@@ -1426,12 +1401,8 @@ class Mention(MessageFilter):
             self._mentions = {self._fix_mention_username(mentions)}
 
 
-
-
-
 class _PaidMedia(MessageFilter):
     __slots__ = ()
-
 
 
 PAID_MEDIA = _PaidMedia(name="filters.PAID_MEDIA")
@@ -1445,7 +1416,6 @@ class _PassportData(MessageFilter):
     __slots__ = ()
 
 
-
 PASSPORT_DATA = _PassportData(name="filters.PASSPORT_DATA")
 """Messages that contain :attr:`telegram.Message.passport_data`."""
 
@@ -1454,14 +1424,12 @@ class _Photo(MessageFilter):
     __slots__ = ()
 
 
-
 PHOTO = _Photo("filters.PHOTO")
 """Messages that contain :attr:`telegram.Message.photo`."""
 
 
 class _Poll(MessageFilter):
     __slots__ = ()
-
 
 
 POLL = _Poll(name="filters.POLL")
@@ -1510,10 +1478,8 @@ class Regex(MessageFilter):
         super().__init__(name=f"filters.Regex({self.pattern})", data_filter=True)
 
 
-
 class _Reply(MessageFilter):
     __slots__ = ()
-
 
 
 REPLY = _Reply(name="filters.REPLY")
@@ -1522,7 +1488,6 @@ REPLY = _Reply(name="filters.REPLY")
 
 class _SenderChat(MessageFilter):
     __slots__ = ()
-
 
 
 class SenderChat(_ChatUserBaseFilter):
@@ -1581,10 +1546,8 @@ class SenderChat(_ChatUserBaseFilter):
     class _CHANNEL(MessageFilter):
         __slots__ = ()
 
-
     class _SUPERGROUP(MessageFilter):
         __slots__ = ()
-
 
     ALL = _SenderChat(name="filters.SenderChat.ALL")
     """All messages with a :attr:`telegram.Message.sender_chat`."""
@@ -1602,7 +1565,6 @@ class SenderChat(_ChatUserBaseFilter):
                 allow through.
         """
         pass
-
 
     def remove_chat_ids(self, chat_id: SCT[int]) -> None:
         """
@@ -1634,20 +1596,17 @@ class StatusUpdate:
     class _All(UpdateFilter):
         __slots__ = ()
 
-
     ALL = _All(name="filters.StatusUpdate.ALL")
     """Messages that contain any of the below."""
 
     class _ChatBackgroundSet(MessageFilter):
         __slots__ = ()
 
-
     CHAT_BACKGROUND_SET = _ChatBackgroundSet(name="filters.StatusUpdate.CHAT_BACKGROUND_SET")
     """Messages that contain :attr:`telegram.Message.chat_background_set`."""
 
     class _ChatCreated(MessageFilter):
         __slots__ = ()
-
 
     CHAT_CREATED = _ChatCreated(name="filters.StatusUpdate.CHAT_CREATED")
     """Messages that contain :attr:`telegram.Message.group_chat_created`,
@@ -1656,7 +1615,6 @@ class StatusUpdate:
 
     class _ChatOwnerChanged(MessageFilter):
         __slots__ = ()
-
 
     CHAT_OWNER_CHANGED = _ChatOwnerChanged(name="filters.StatusUpdate.CHAT_OWNER_CHANGED")
     """Messages that contain :attr:`telegram.Message.chat_owner_changed`.
@@ -1667,7 +1625,6 @@ class StatusUpdate:
     class _ChatOwnerLeft(MessageFilter):
         __slots__ = ()
 
-
     CHAT_OWNER_LEFT = _ChatOwnerLeft(name="filters.StatusUpdate.CHAT_OWNER_LEFT")
     """Messages that contain :attr:`telegram.Message.chat_owner_left`.
 
@@ -1676,7 +1633,6 @@ class StatusUpdate:
 
     class _ChatShared(MessageFilter):
         __slots__ = ()
-
 
     CHAT_SHARED = _ChatShared(name="filters.StatusUpdate.CHAT_SHARED")
     """Messages that contain :attr:`telegram.Message.chat_shared`.
@@ -1687,7 +1643,6 @@ class StatusUpdate:
     class _ChecklistTasksAdded(MessageFilter):
         __slots__ = ()
 
-
     CHECKLIST_TASKS_ADDED = _ChecklistTasksAdded(name="filters.StatusUpdate.CHECKLIST_TASKS_ADDED")
     """Messages that contain :attr:`telegram.Message.checklist_tasks_added`.
 
@@ -1696,7 +1651,6 @@ class StatusUpdate:
 
     class _ChecklistTasksDone(MessageFilter):
         __slots__ = ()
-
 
     CHECKLIST_TASKS_DONE = _ChecklistTasksDone(name="filters.StatusUpdate.CHECKLIST_TASKS_DONE")
     """Messages that contain :attr:`telegram.Message.checklist_tasks_done`.
@@ -1707,13 +1661,11 @@ class StatusUpdate:
     class _ConnectedWebsite(MessageFilter):
         __slots__ = ()
 
-
     CONNECTED_WEBSITE = _ConnectedWebsite(name="filters.StatusUpdate.CONNECTED_WEBSITE")
     """Messages that contain :attr:`telegram.Message.connected_website`."""
 
     class _DirectMessagePriceChanged(MessageFilter):
         __slots__ = ()
-
 
     DIRECT_MESSAGE_PRICE_CHANGED = _DirectMessagePriceChanged(
         name="filters.StatusUpdate.DIRECT_MESSAGE_PRICE_CHANGED"
@@ -1726,13 +1678,11 @@ class StatusUpdate:
     class _DeleteChatPhoto(MessageFilter):
         __slots__ = ()
 
-
     DELETE_CHAT_PHOTO = _DeleteChatPhoto(name="filters.StatusUpdate.DELETE_CHAT_PHOTO")
     """Messages that contain :attr:`telegram.Message.delete_chat_photo`."""
 
     class _ForumTopicClosed(MessageFilter):
         __slots__ = ()
-
 
     FORUM_TOPIC_CLOSED = _ForumTopicClosed(name="filters.StatusUpdate.FORUM_TOPIC_CLOSED")
     """Messages that contain :attr:`telegram.Message.forum_topic_closed`.
@@ -1743,7 +1693,6 @@ class StatusUpdate:
     class _ForumTopicCreated(MessageFilter):
         __slots__ = ()
 
-
     FORUM_TOPIC_CREATED = _ForumTopicCreated(name="filters.StatusUpdate.FORUM_TOPIC_CREATED")
     """Messages that contain :attr:`telegram.Message.forum_topic_created`.
 
@@ -1752,7 +1701,6 @@ class StatusUpdate:
 
     class _ForumTopicEdited(MessageFilter):
         __slots__ = ()
-
 
     FORUM_TOPIC_EDITED = _ForumTopicEdited(name="filters.StatusUpdate.FORUM_TOPIC_EDITED")
     """Messages that contain :attr:`telegram.Message.forum_topic_edited`.
@@ -1763,7 +1711,6 @@ class StatusUpdate:
     class _ForumTopicReopened(MessageFilter):
         __slots__ = ()
 
-
     FORUM_TOPIC_REOPENED = _ForumTopicReopened(name="filters.StatusUpdate.FORUM_TOPIC_REOPENED")
     """Messages that contain :attr:`telegram.Message.forum_topic_reopened`.
 
@@ -1772,7 +1719,6 @@ class StatusUpdate:
 
     class _GeneralForumTopicHidden(MessageFilter):
         __slots__ = ()
-
 
     GENERAL_FORUM_TOPIC_HIDDEN = _GeneralForumTopicHidden(
         name="filters.StatusUpdate.GENERAL_FORUM_TOPIC_HIDDEN"
@@ -1785,7 +1731,6 @@ class StatusUpdate:
     class _GeneralForumTopicUnhidden(MessageFilter):
         __slots__ = ()
 
-
     GENERAL_FORUM_TOPIC_UNHIDDEN = _GeneralForumTopicUnhidden(
         name="filters.StatusUpdate.GENERAL_FORUM_TOPIC_UNHIDDEN"
     )
@@ -1797,7 +1742,6 @@ class StatusUpdate:
     class _Gift(MessageFilter):
         __slots__ = ()
 
-
     GIFT = _Gift(name="filters.StatusUpdate.GIFT")
     """Messages that contain :attr:`telegram.Message.gift`.
 
@@ -1806,7 +1750,6 @@ class StatusUpdate:
 
     class _GiftUpgradeSent(MessageFilter):
         __slots__ = ()
-
 
     GIFT_UPGRADE_SENT = _GiftUpgradeSent(name="filters.StatusUpdate.GIFT_UPGRADE_SENT")
     """Messages that contain :attr:`telegram.Message.gift_upgrade_sent`.
@@ -1817,7 +1760,6 @@ class StatusUpdate:
     class _GiveawayCreated(MessageFilter):
         __slots__ = ()
 
-
     GIVEAWAY_CREATED = _GiveawayCreated(name="filters.StatusUpdate.GIVEAWAY_CREATED")
     """Messages that contain :attr:`telegram.Message.giveaway_created`.
 
@@ -1827,7 +1769,6 @@ class StatusUpdate:
     class _GiveawayCompleted(MessageFilter):
         __slots__ = ()
 
-
     GIVEAWAY_COMPLETED = _GiveawayCompleted(name="filters.StatusUpdate.GIVEAWAY_COMPLETED")
     """Messages that contain :attr:`telegram.Message.giveaway_completed`.
     .. versionadded:: 20.8
@@ -1836,13 +1777,11 @@ class StatusUpdate:
     class _LeftChatMember(MessageFilter):
         __slots__ = ()
 
-
     LEFT_CHAT_MEMBER = _LeftChatMember(name="filters.StatusUpdate.LEFT_CHAT_MEMBER")
     """Messages that contain :attr:`telegram.Message.left_chat_member`."""
 
     class _MessageAutoDeleteTimerChanged(MessageFilter):
         __slots__ = ()
-
 
     MESSAGE_AUTO_DELETE_TIMER_CHANGED = _MessageAutoDeleteTimerChanged(
         "filters.StatusUpdate.MESSAGE_AUTO_DELETE_TIMER_CHANGED"
@@ -1855,7 +1794,6 @@ class StatusUpdate:
     class _Migrate(MessageFilter):
         __slots__ = ()
 
-
     MIGRATE = _Migrate(name="filters.StatusUpdate.MIGRATE")
     """Messages that contain :attr:`telegram.Message.migrate_from_chat_id` or
         :attr:`telegram.Message.migrate_to_chat_id`."""
@@ -1863,13 +1801,11 @@ class StatusUpdate:
     class _NewChatMembers(MessageFilter):
         __slots__ = ()
 
-
     NEW_CHAT_MEMBERS = _NewChatMembers(name="filters.StatusUpdate.NEW_CHAT_MEMBERS")
     """Messages that contain :attr:`telegram.Message.new_chat_members`."""
 
     class _NewChatPhoto(MessageFilter):
         __slots__ = ()
-
 
     NEW_CHAT_PHOTO = _NewChatPhoto(name="filters.StatusUpdate.NEW_CHAT_PHOTO")
     """Messages that contain :attr:`telegram.Message.new_chat_photo`."""
@@ -1877,13 +1813,11 @@ class StatusUpdate:
     class _NewChatTitle(MessageFilter):
         __slots__ = ()
 
-
     NEW_CHAT_TITLE = _NewChatTitle(name="filters.StatusUpdate.NEW_CHAT_TITLE")
     """Messages that contain :attr:`telegram.Message.new_chat_title`."""
 
     class _PaidMessagePriceChanged(MessageFilter):
         __slots__ = ()
-
 
     PAID_MESSAGE_PRICE_CHANGED = _PaidMessagePriceChanged(
         name="filters.StatusUpdate.PAID_MESSAGE_PRICE_CHANGED"
@@ -1896,13 +1830,11 @@ class StatusUpdate:
     class _PinnedMessage(MessageFilter):
         __slots__ = ()
 
-
     PINNED_MESSAGE = _PinnedMessage(name="filters.StatusUpdate.PINNED_MESSAGE")
     """Messages that contain :attr:`telegram.Message.pinned_message`."""
 
     class _ProximityAlertTriggered(MessageFilter):
         __slots__ = ()
-
 
     PROXIMITY_ALERT_TRIGGERED = _ProximityAlertTriggered(
         "filters.StatusUpdate.PROXIMITY_ALERT_TRIGGERED"
@@ -1912,7 +1844,6 @@ class StatusUpdate:
     class _RefundedPayment(MessageFilter):
         __slots__ = ()
 
-
     REFUNDED_PAYMENT = _RefundedPayment("filters.StatusUpdate.REFUNDED_PAYMENT")
     """Messages that contain :attr:`telegram.Message.refunded_payment`.
     .. versionadded:: 21.4
@@ -1920,7 +1851,6 @@ class StatusUpdate:
 
     class _SuggestedPostApprovalFailed(MessageFilter):
         __slots__ = ()
-
 
     SUGGESTED_POST_APPROVAL_FAILED = _SuggestedPostApprovalFailed(
         "filters.StatusUpdate.SUGGESTED_POST_APPROVAL_FAILED"
@@ -1932,7 +1862,6 @@ class StatusUpdate:
     class _SuggestedPostApproved(MessageFilter):
         __slots__ = ()
 
-
     SUGGESTED_POST_APPROVED = _SuggestedPostApproved(
         "filters.StatusUpdate.SUGGESTED_POST_APPROVED"
     )
@@ -1942,7 +1871,6 @@ class StatusUpdate:
 
     class _SuggestedPostDeclined(MessageFilter):
         __slots__ = ()
-
 
     SUGGESTED_POST_DECLINED = _SuggestedPostDeclined(
         "filters.StatusUpdate.SUGGESTED_POST_DECLINED"
@@ -1954,7 +1882,6 @@ class StatusUpdate:
     class _SuggestedPostPaid(MessageFilter):
         __slots__ = ()
 
-
     SUGGESTED_POST_PAID = _SuggestedPostPaid("filters.StatusUpdate.SUGGESTED_POST_PAID")
     """Messages that contain :attr:`telegram.Message.suggested_post_paid`.
     .. versionadded:: 22.4
@@ -1962,7 +1889,6 @@ class StatusUpdate:
 
     class _SuggestedPostRefunded(MessageFilter):
         __slots__ = ()
-
 
     SUGGESTED_POST_REFUNDED = _SuggestedPostRefunded(
         "filters.StatusUpdate.SUGGESTED_POST_REFUNDED"
@@ -1974,7 +1900,6 @@ class StatusUpdate:
     class _UniqueGift(MessageFilter):
         __slots__ = ()
 
-
     UNIQUE_GIFT = _UniqueGift(name="filters.StatusUpdate.UNIQUE_GIFT")
     """Messages that contain :attr:`telegram.Message.unique_gift`.
 
@@ -1984,7 +1909,6 @@ class StatusUpdate:
     class _UsersShared(MessageFilter):
         __slots__ = ()
 
-
     USERS_SHARED = _UsersShared(name="filters.StatusUpdate.USERS_SHARED")
     """Messages that contain :attr:`telegram.Message.users_shared`.
 
@@ -1993,7 +1917,6 @@ class StatusUpdate:
 
     class _VideoChatEnded(MessageFilter):
         __slots__ = ()
-
 
     VIDEO_CHAT_ENDED = _VideoChatEnded(name="filters.StatusUpdate.VIDEO_CHAT_ENDED")
     """Messages that contain :attr:`telegram.Message.video_chat_ended`.
@@ -2006,7 +1929,6 @@ class StatusUpdate:
     class _VideoChatScheduled(MessageFilter):
         __slots__ = ()
 
-
     VIDEO_CHAT_SCHEDULED = _VideoChatScheduled(name="filters.StatusUpdate.VIDEO_CHAT_SCHEDULED")
     """Messages that contain :attr:`telegram.Message.video_chat_scheduled`.
 
@@ -2018,7 +1940,6 @@ class StatusUpdate:
     class _VideoChatStarted(MessageFilter):
         __slots__ = ()
 
-
     VIDEO_CHAT_STARTED = _VideoChatStarted(name="filters.StatusUpdate.VIDEO_CHAT_STARTED")
     """Messages that contain :attr:`telegram.Message.video_chat_started`.
 
@@ -2029,7 +1950,6 @@ class StatusUpdate:
 
     class _VideoChatParticipantsInvited(MessageFilter):
         __slots__ = ()
-
 
     VIDEO_CHAT_PARTICIPANTS_INVITED = _VideoChatParticipantsInvited(
         "filters.StatusUpdate.VIDEO_CHAT_PARTICIPANTS_INVITED"
@@ -2044,7 +1964,6 @@ class StatusUpdate:
     class _WebAppData(MessageFilter):
         __slots__ = ()
 
-
     WEB_APP_DATA = _WebAppData(name="filters.StatusUpdate.WEB_APP_DATA")
     """Messages that contain :attr:`telegram.Message.web_app_data`.
 
@@ -2053,7 +1972,6 @@ class StatusUpdate:
 
     class _WriteAccessAllowed(MessageFilter):
         __slots__ = ()
-
 
     WRITE_ACCESS_ALLOWED = _WriteAccessAllowed(name="filters.StatusUpdate.WRITE_ACCESS_ALLOWED")
     """Messages that contain :attr:`telegram.Message.write_access_allowed`.
@@ -2078,13 +1996,11 @@ class Sticker:
     class _All(MessageFilter):
         __slots__ = ()
 
-
     ALL = _All(name="filters.Sticker.ALL")
     """Messages that contain :attr:`telegram.Message.sticker`."""
 
     class _Animated(MessageFilter):
         __slots__ = ()
-
 
     ANIMATED = _Animated(name="filters.Sticker.ANIMATED")
     """Messages that contain :attr:`telegram.Message.sticker` and
@@ -2096,7 +2012,6 @@ class Sticker:
     class _Static(MessageFilter):
         __slots__ = ()
 
-
     STATIC = _Static(name="filters.Sticker.STATIC")
     """Messages that contain :attr:`telegram.Message.sticker` and is a static sticker, i.e. does
     not contain :attr:`telegram.Sticker.is_animated` or :attr:`telegram.Sticker.is_video`.
@@ -2107,7 +2022,6 @@ class Sticker:
     class _Video(MessageFilter):
         __slots__ = ()
 
-
     VIDEO = _Video(name="filters.Sticker.VIDEO")
     """Messages that contain :attr:`telegram.Message.sticker` and is a
     :attr:`video sticker <telegram.Sticker.is_video>`.
@@ -2117,7 +2031,6 @@ class Sticker:
 
     class _Premium(MessageFilter):
         __slots__ = ()
-
 
     PREMIUM = _Premium(name="filters.Sticker.PREMIUM")
     """Messages that contain :attr:`telegram.Message.sticker` and have a
@@ -2130,7 +2043,6 @@ class Sticker:
 
 class _Story(MessageFilter):
     __slots__ = ()
-
 
 
 STORY = _Story(name="filters.STORY")
@@ -2171,14 +2083,12 @@ class SuccessfulPayment(MessageFilter):
         )
 
 
-
 SUCCESSFUL_PAYMENT = SuccessfulPayment()
 """Messages that contain :attr:`telegram.Message.successful_payment`."""
 
 
 class _SuggestedPostInfo(MessageFilter):
     __slots__ = ()
-
 
 
 SUGGESTED_POST_INFO = _SuggestedPostInfo(name="filters.SUGGESTED_POST_INFO")
@@ -2224,7 +2134,6 @@ class Text(MessageFilter):
         super().__init__(name=f"filters.Text({strings})" if strings else "filters.TEXT")
 
 
-
 TEXT = Text()  # pylint: disable=invalid-name
 """
 Shortcut for :class:`telegram.ext.filters.Text()`.
@@ -2251,13 +2160,11 @@ class UpdateType:
     class _ChannelPost(UpdateFilter):
         __slots__ = ()
 
-
     CHANNEL_POST = _ChannelPost(name="filters.UpdateType.CHANNEL_POST")
     """Updates with :attr:`telegram.Update.channel_post`."""
 
     class _ChannelPosts(UpdateFilter):
         __slots__ = ()
-
 
     CHANNEL_POSTS = _ChannelPosts(name="filters.UpdateType.CHANNEL_POSTS")
     """Updates with either :attr:`telegram.Update.channel_post` or
@@ -2265,7 +2172,6 @@ class UpdateType:
 
     class _Edited(UpdateFilter):
         __slots__ = ()
-
 
     EDITED = _Edited(name="filters.UpdateType.EDITED")
     """Updates with :attr:`telegram.Update.edited_message`,
@@ -2281,13 +2187,11 @@ class UpdateType:
     class _EditedChannelPost(UpdateFilter):
         __slots__ = ()
 
-
     EDITED_CHANNEL_POST = _EditedChannelPost(name="filters.UpdateType.EDITED_CHANNEL_POST")
     """Updates with :attr:`telegram.Update.edited_channel_post`."""
 
     class _EditedMessage(UpdateFilter):
         __slots__ = ()
-
 
     EDITED_MESSAGE = _EditedMessage(name="filters.UpdateType.EDITED_MESSAGE")
     """Updates with :attr:`telegram.Update.edited_message`."""
@@ -2295,13 +2199,11 @@ class UpdateType:
     class _Message(UpdateFilter):
         __slots__ = ()
 
-
     MESSAGE = _Message(name="filters.UpdateType.MESSAGE")
     """Updates with :attr:`telegram.Update.message`."""
 
     class _Messages(UpdateFilter):
         __slots__ = ()
-
 
     MESSAGES = _Messages(name="filters.UpdateType.MESSAGES")
     """Updates with either :attr:`telegram.Update.message` or
@@ -2311,7 +2213,6 @@ class UpdateType:
     class _BusinessMessage(UpdateFilter):
         __slots__ = ()
 
-
     BUSINESS_MESSAGE = _BusinessMessage(name="filters.UpdateType.BUSINESS_MESSAGE")
     """Updates with :attr:`telegram.Update.business_message`.
 
@@ -2319,7 +2220,6 @@ class UpdateType:
 
     class _EditedBusinessMessage(UpdateFilter):
         __slots__ = ()
-
 
     EDITED_BUSINESS_MESSAGE = _EditedBusinessMessage(
         name="filters.UpdateType.EDITED_BUSINESS_MESSAGE"
@@ -2331,7 +2231,6 @@ class UpdateType:
 
     class _BusinessMessages(UpdateFilter):
         __slots__ = ()
-
 
     BUSINESS_MESSAGES = _BusinessMessages(name="filters.UpdateType.BUSINESS_MESSAGES")
     """Updates with either :attr:`telegram.Update.business_message` or
@@ -2375,7 +2274,6 @@ class User(_ChatUserBaseFilter):
         super().__init__(chat_id=user_id, username=username, allow_empty=allow_empty)
         self._chat_id_name = "user_id"
 
-
     @property
     def user_ids(self) -> frozenset[int]:
         """
@@ -2392,7 +2290,6 @@ class User(_ChatUserBaseFilter):
             frozenset(:obj:`int`)
         """
         pass
-
 
     def add_user_ids(self, user_id: SCT[int]) -> None:
         """
@@ -2419,14 +2316,12 @@ class _User(MessageFilter):
     __slots__ = ()
 
 
-
 USER = _User(name="filters.USER")
 """This filter filters *any* message that has a :attr:`telegram.Message.from_user`."""
 
 
 class _UserAttachment(UpdateFilter):
     __slots__ = ()
-
 
 
 USER_ATTACHMENT = _UserAttachment(name="filters.USER_ATTACHMENT")
@@ -2442,7 +2337,6 @@ class _UserPremium(UpdateFilter):
     __slots__ = ()
 
 
-
 PREMIUM_USER = _UserPremium(name="filters.PREMIUM_USER")
 """This filter filters *any* message from a
 :attr:`Telegram Premium user <telegram.User.is_premium>` as :attr:`telegram.Update.effective_user`.
@@ -2453,7 +2347,6 @@ PREMIUM_USER = _UserPremium(name="filters.PREMIUM_USER")
 
 class _Venue(MessageFilter):
     __slots__ = ()
-
 
 
 VENUE = _Venue(name="filters.VENUE")
@@ -2496,7 +2389,6 @@ class ViaBot(_ChatUserBaseFilter):
         super().__init__(chat_id=bot_id, username=username, allow_empty=allow_empty)
         self._chat_id_name = "bot_id"
 
-
     @property
     def bot_ids(self) -> frozenset[int]:
         """
@@ -2513,7 +2405,6 @@ class ViaBot(_ChatUserBaseFilter):
             frozenset(:obj:`int`)
         """
         pass
-
 
     def add_bot_ids(self, bot_id: SCT[int]) -> None:
         """
@@ -2540,7 +2431,6 @@ class _ViaBot(MessageFilter):
     __slots__ = ()
 
 
-
 VIA_BOT = _ViaBot(name="filters.VIA_BOT")
 """This filter filters for message that were sent via *any* bot.
 
@@ -2551,14 +2441,12 @@ class _Video(MessageFilter):
     __slots__ = ()
 
 
-
 VIDEO = _Video(name="filters.VIDEO")  # pylint: disable=invalid-name
 """Messages that contain :attr:`telegram.Message.video`."""
 
 
 class _VideoNote(MessageFilter):
     __slots__ = ()
-
 
 
 VIDEO_NOTE = _VideoNote(name="filters.VIDEO_NOTE")
@@ -2569,14 +2457,12 @@ class _Voice(MessageFilter):
     __slots__ = ()
 
 
-
 VOICE = _Voice("filters.VOICE")
 """Messages that contain :attr:`telegram.Message.voice`."""
 
 
 class _ReplyToStory(MessageFilter):
     __slots__ = ()
-
 
 
 REPLY_TO_STORY = _ReplyToStory(name="filters.REPLY_TO_STORY")
@@ -2587,14 +2473,12 @@ class _BoostAdded(MessageFilter):
     __slots__ = ()
 
 
-
 BOOST_ADDED = _BoostAdded(name="filters.BOOST_ADDED")
 """Messages that contain :attr:`telegram.Message.boost_added`."""
 
 
 class _SenderBoostCount(MessageFilter):
     __slots__ = ()
-
 
 
 SENDER_BOOST_COUNT = _SenderBoostCount(name="filters.SENDER_BOOST_COUNT")
