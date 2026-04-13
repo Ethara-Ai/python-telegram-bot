@@ -37,10 +37,7 @@ def get_member(enum_cls: type[_Enum], value: _A, default: _B) -> _Enum | _A | _B
     """Tries to call ``enum_cls(value)`` to convert the value into an enumeration member.
     If that fails, the ``default`` is returned.
     """
-    try:
-        return enum_cls(value)
-    except ValueError:
-        return default
+    pass
 
 
 # Python 3.11 and above has a different output for mixin classes for IntEnum, StrEnum and IntFlag

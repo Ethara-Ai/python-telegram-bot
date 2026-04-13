@@ -63,11 +63,6 @@ class InputStoryContent(TelegramObject):
 
         self._freeze()
 
-    @staticmethod
-    def _parse_file_input(file_input: FileInput) -> str | InputFile:
-        # We use local_mode=True because we don't have access to the actual setting and want
-        # things to work in local mode.
-        return parse_file_input(file_input, attach=True, local_mode=True)
 
 
 class InputStoryContentPhoto(InputStoryContent):

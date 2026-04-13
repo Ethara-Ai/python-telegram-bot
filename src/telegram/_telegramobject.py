@@ -490,15 +490,7 @@ class TelegramObject:
         * There probably is no use case for it anyway. If you manually initialize a TO subclass,
           then you can pass everything as proper argument.
         """
-        # we convert to list to ensure that the list doesn't change length while we loop
-        for key in list(api_kwargs.keys()):
-            # property attributes are not settable, so we need to set the private attribute
-            if isinstance(getattr(self.__class__, key, None), property):
-                # if setattr fails, we'll just leave the value in api_kwargs:
-                with contextlib.suppress(AttributeError):
-                    setattr(self, f"_{key}", api_kwargs.pop(key))
-            elif getattr(self, key, True) is None:
-                setattr(self, key, api_kwargs.pop(key))
+        pass
 
     def _is_deprecated_attr(self, attr: str) -> bool:
         """Checks whether `attr` is in the list of deprecated time period attributes."""

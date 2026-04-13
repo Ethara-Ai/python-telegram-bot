@@ -236,21 +236,21 @@ class User(TelegramObject):
         """:obj:`str`: Convenience property. If available, returns the user's :attr:`username`
         prefixed with "@". If :attr:`username` is not available, returns :attr:`full_name`.
         """
-        return get_name(self)
+        pass
 
     @property
     def full_name(self) -> str:
         """:obj:`str`: Convenience property. The user's :attr:`first_name`, followed by (if
         available) :attr:`last_name`.
         """
-        return get_full_name(self)
+        pass
 
     @property
     def link(self) -> str | None:
         """:obj:`str`: Convenience property. If :attr:`username` is available, returns a t.me link
         of the user.
         """
-        return get_link(self)
+        pass
 
     async def get_profile_photos(
         self,
@@ -274,16 +274,7 @@ class User(TelegramObject):
             :class:`telegram.UserProfilePhotos`
 
         """
-        return await self.get_bot().get_user_profile_photos(
-            user_id=self.id,
-            offset=offset,
-            limit=limit,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     def mention_markdown(self, name: str | None = None) -> str:
         """
@@ -299,9 +290,7 @@ class User(TelegramObject):
             :obj:`str`: The inline mention for the user as markdown (version 1).
 
         """
-        if name:
-            return helpers_mention_markdown(self.id, name)
-        return helpers_mention_markdown(self.id, self.full_name)
+        pass
 
     def mention_markdown_v2(self, name: str | None = None) -> str:
         """
@@ -312,9 +301,7 @@ class User(TelegramObject):
             :obj:`str`: The inline mention for the user as markdown (version 2).
 
         """
-        if name:
-            return helpers_mention_markdown(self.id, name, version=2)
-        return helpers_mention_markdown(self.id, self.full_name, version=2)
+        pass
 
     def mention_html(self, name: str | None = None) -> str:
         """
@@ -325,9 +312,7 @@ class User(TelegramObject):
             :obj:`str`: The inline mention for the user as HTML.
 
         """
-        if name:
-            return helpers_mention_html(self.id, name)
-        return helpers_mention_html(self.id, self.full_name)
+        pass
 
     def mention_button(self, name: str | None = None) -> InlineKeyboardButton:
         """Shortcut for::
@@ -342,7 +327,7 @@ class User(TelegramObject):
         Returns:
             :class:`telegram.InlineKeyboardButton`: InlineButton with url set to the user mention
         """
-        return InlineKeyboardButton(text=name or self.full_name, url=f"tg://user?id={self.id}")
+        pass
 
     async def pin_message(
         self,
@@ -369,17 +354,7 @@ class User(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().pin_chat_message(
-            chat_id=self.id,
-            message_id=message_id,
-            disable_notification=disable_notification,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            business_connection_id=business_connection_id,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def unpin_message(
         self,
@@ -405,16 +380,7 @@ class User(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().unpin_chat_message(
-            chat_id=self.id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            message_id=message_id,
-            business_connection_id=business_connection_id,
-        )
+        pass
 
     async def unpin_all_messages(
         self,
@@ -439,14 +405,7 @@ class User(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().unpin_all_chat_messages(
-            chat_id=self.id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def send_message(
         self,
@@ -542,19 +501,7 @@ class User(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().send_message_draft(
-            chat_id=self.id,
-            draft_id=draft_id,
-            text=text,
-            message_thread_id=message_thread_id,
-            parse_mode=parse_mode,
-            entities=entities,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def delete_message(
         self,
@@ -578,15 +525,7 @@ class User(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().delete_message(
-            chat_id=self.id,
-            message_id=message_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def delete_messages(
         self,
@@ -610,15 +549,7 @@ class User(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().delete_messages(
-            chat_id=self.id,
-            message_ids=message_ids,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def send_photo(
         self,
@@ -661,33 +592,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_photo(
-            chat_id=self.id,
-            photo=photo,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            parse_mode=parse_mode,
-            allow_sending_without_reply=allow_sending_without_reply,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            has_spoiler=has_spoiler,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            show_caption_above_media=show_caption_above_media,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_media_group(
         self,
@@ -728,28 +633,7 @@ class User(TelegramObject):
             instances that were sent is returned.
 
         """
-        return await self.get_bot().send_media_group(
-            chat_id=self.id,
-            media=media,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            caption=caption,
-            parse_mode=parse_mode,
-            caption_entities=caption_entities,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-        )
+        pass
 
     async def send_audio(
         self,
@@ -794,35 +678,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_audio(
-            chat_id=self.id,
-            audio=audio,
-            duration=duration,
-            performer=performer,
-            title=title,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            parse_mode=parse_mode,
-            allow_sending_without_reply=allow_sending_without_reply,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            thumbnail=thumbnail,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_chat_action(
         self,
@@ -849,17 +705,7 @@ class User(TelegramObject):
             :obj:`True`: On success.
 
         """
-        return await self.get_bot().send_chat_action(
-            chat_id=self.id,
-            action=action,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            business_connection_id=business_connection_id,
-        )
+        pass
 
     send_action = send_chat_action
     """Alias for :attr:`send_chat_action`"""
@@ -903,31 +749,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_contact(
-            chat_id=self.id,
-            phone_number=phone_number,
-            first_name=first_name,
-            last_name=last_name,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            contact=contact,
-            vcard=vcard,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_dice(
         self,
@@ -964,27 +786,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_dice(
-            chat_id=self.id,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            emoji=emoji,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_document(
         self,
@@ -1027,33 +829,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_document(
-            chat_id=self.id,
-            document=document,
-            filename=filename,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            parse_mode=parse_mode,
-            thumbnail=thumbnail,
-            api_kwargs=api_kwargs,
-            disable_content_type_detection=disable_content_type_detection,
-            allow_sending_without_reply=allow_sending_without_reply,
-            caption_entities=caption_entities,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_game(
         self,
@@ -1088,25 +864,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_game(
-            chat_id=self.id,
-            game_short_name=game_short_name,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-        )
+        pass
 
     async def send_invoice(
         self,
@@ -1172,46 +930,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_invoice(
-            chat_id=self.id,
-            title=title,
-            description=description,
-            payload=payload,
-            provider_token=provider_token,
-            currency=currency,
-            prices=prices,
-            start_parameter=start_parameter,
-            photo_url=photo_url,
-            photo_size=photo_size,
-            photo_width=photo_width,
-            photo_height=photo_height,
-            need_name=need_name,
-            need_phone_number=need_phone_number,
-            need_email=need_email,
-            need_shipping_address=need_shipping_address,
-            is_flexible=is_flexible,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            provider_data=provider_data,
-            send_phone_number_to_provider=send_phone_number_to_provider,
-            send_email_to_provider=send_email_to_provider,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            max_tip_amount=max_tip_amount,
-            suggested_tip_amounts=suggested_tip_amounts,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_location(
         self,
@@ -1254,33 +973,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_location(
-            chat_id=self.id,
-            latitude=latitude,
-            longitude=longitude,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            location=location,
-            live_period=live_period,
-            api_kwargs=api_kwargs,
-            horizontal_accuracy=horizontal_accuracy,
-            heading=heading,
-            proximity_alert_radius=proximity_alert_radius,
-            allow_sending_without_reply=allow_sending_without_reply,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_animation(
         self,
@@ -1327,37 +1020,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_animation(
-            chat_id=self.id,
-            animation=animation,
-            duration=duration,
-            width=width,
-            height=height,
-            caption=caption,
-            parse_mode=parse_mode,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            has_spoiler=has_spoiler,
-            thumbnail=thumbnail,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            show_caption_above_media=show_caption_above_media,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_sticker(
         self,
@@ -1395,28 +1058,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_sticker(
-            chat_id=self.id,
-            sticker=sticker,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            emoji=emoji,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_video(
         self,
@@ -1466,40 +1108,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_video(
-            chat_id=self.id,
-            video=video,
-            duration=duration,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            width=width,
-            height=height,
-            parse_mode=parse_mode,
-            supports_streaming=supports_streaming,
-            thumbnail=thumbnail,
-            cover=cover,
-            start_timestamp=start_timestamp,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            has_spoiler=has_spoiler,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            show_caption_above_media=show_caption_above_media,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_venue(
         self,
@@ -1544,35 +1153,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_venue(
-            chat_id=self.id,
-            latitude=latitude,
-            longitude=longitude,
-            title=title,
-            address=address,
-            foursquare_id=foursquare_id,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            venue=venue,
-            foursquare_type=foursquare_type,
-            api_kwargs=api_kwargs,
-            google_place_id=google_place_id,
-            google_place_type=google_place_type,
-            allow_sending_without_reply=allow_sending_without_reply,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_video_note(
         self,
@@ -1613,31 +1194,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_video_note(
-            chat_id=self.id,
-            video_note=video_note,
-            duration=duration,
-            length=length,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            thumbnail=thumbnail,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_voice(
         self,
@@ -1679,32 +1236,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_voice(
-            chat_id=self.id,
-            voice=voice,
-            duration=duration,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            parse_mode=parse_mode,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def send_poll(
         self,
@@ -1752,38 +1284,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().send_poll(
-            chat_id=self.id,
-            question=question,
-            options=options,
-            is_anonymous=is_anonymous,
-            type=type,  # pylint=pylint,
-            allows_multiple_answers=allows_multiple_answers,
-            correct_option_id=correct_option_id,
-            is_closed=is_closed,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            explanation=explanation,
-            explanation_parse_mode=explanation_parse_mode,
-            open_period=open_period,
-            close_date=close_date,
-            api_kwargs=api_kwargs,
-            allow_sending_without_reply=allow_sending_without_reply,
-            explanation_entities=explanation_entities,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=business_connection_id,
-            question_parse_mode=question_parse_mode,
-            question_entities=question_entities,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-        )
+        pass
 
     async def send_gift(
         self,
@@ -1810,20 +1311,7 @@ class User(TelegramObject):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().send_gift(
-            chat_id=None,
-            user_id=self.id,
-            gift_id=gift_id,
-            text=text,
-            text_parse_mode=text_parse_mode,
-            text_entities=text_entities,
-            pay_for_upgrade=pay_for_upgrade,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def gift_premium_subscription(
         self,
@@ -1851,19 +1339,7 @@ class User(TelegramObject):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().gift_premium_subscription(
-            user_id=self.id,
-            month_count=month_count,
-            star_count=star_count,
-            text=text,
-            text_parse_mode=text_parse_mode,
-            text_entities=text_entities,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def send_copy(
         self,
@@ -1905,32 +1381,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().copy_message(
-            chat_id=self.id,
-            from_chat_id=from_chat_id,
-            message_id=message_id,
-            caption=caption,
-            video_start_timestamp=video_start_timestamp,
-            parse_mode=parse_mode,
-            caption_entities=caption_entities,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_parameters=reply_parameters,
-            allow_sending_without_reply=allow_sending_without_reply,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            show_caption_above_media=show_caption_above_media,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-            message_effect_id=message_effect_id,
-        )
+        pass
 
     async def copy_message(
         self,
@@ -2030,21 +1481,7 @@ class User(TelegramObject):
             of the sent messages is returned.
 
         """
-        return await self.get_bot().copy_messages(
-            chat_id=self.id,
-            from_chat_id=from_chat_id,
-            message_ids=message_ids,
-            disable_notification=disable_notification,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            remove_caption=remove_caption,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            direct_messages_topic_id=direct_messages_topic_id,
-        )
+        pass
 
     async def copy_messages(
         self,
@@ -2077,21 +1514,7 @@ class User(TelegramObject):
             of the sent messages is returned.
 
         """
-        return await self.get_bot().copy_messages(
-            from_chat_id=self.id,
-            chat_id=chat_id,
-            message_ids=message_ids,
-            disable_notification=disable_notification,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            remove_caption=remove_caption,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            direct_messages_topic_id=direct_messages_topic_id,
-        )
+        pass
 
     async def forward_from(
         self,
@@ -2125,23 +1548,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().forward_message(
-            chat_id=self.id,
-            from_chat_id=from_chat_id,
-            message_id=message_id,
-            video_start_timestamp=video_start_timestamp,
-            disable_notification=disable_notification,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-            message_effect_id=message_effect_id,
-        )
+        pass
 
     async def forward_to(
         self,
@@ -2176,23 +1583,7 @@ class User(TelegramObject):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        return await self.get_bot().forward_message(
-            from_chat_id=self.id,
-            chat_id=chat_id,
-            message_id=message_id,
-            video_start_timestamp=video_start_timestamp,
-            disable_notification=disable_notification,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            direct_messages_topic_id=direct_messages_topic_id,
-            suggested_post_parameters=suggested_post_parameters,
-            message_effect_id=message_effect_id,
-        )
+        pass
 
     async def forward_messages_from(
         self,
@@ -2224,20 +1615,7 @@ class User(TelegramObject):
             of sent messages is returned.
 
         """
-        return await self.get_bot().forward_messages(
-            chat_id=self.id,
-            from_chat_id=from_chat_id,
-            message_ids=message_ids,
-            disable_notification=disable_notification,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            direct_messages_topic_id=direct_messages_topic_id,
-        )
+        pass
 
     async def forward_messages_to(
         self,
@@ -2269,20 +1647,7 @@ class User(TelegramObject):
             of sent messages is returned.
 
         """
-        return await self.get_bot().forward_messages(
-            from_chat_id=self.id,
-            chat_id=chat_id,
-            message_ids=message_ids,
-            disable_notification=disable_notification,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            direct_messages_topic_id=direct_messages_topic_id,
-        )
+        pass
 
     async def approve_join_request(
         self,
@@ -2310,15 +1675,7 @@ class User(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().approve_chat_join_request(
-            user_id=self.id,
-            chat_id=chat_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def decline_join_request(
         self,
@@ -2346,15 +1703,7 @@ class User(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().decline_chat_join_request(
-            user_id=self.id,
-            chat_id=chat_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def set_menu_button(
         self,
@@ -2383,15 +1732,7 @@ class User(TelegramObject):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().set_chat_menu_button(
-            chat_id=self.id,
-            menu_button=menu_button,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def get_menu_button(
         self,
@@ -2419,14 +1760,7 @@ class User(TelegramObject):
         Returns:
             :class:`telegram.MenuButton`: On success, the current menu button is returned.
         """
-        return await self.get_bot().get_chat_menu_button(
-            chat_id=self.id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def get_chat_boosts(
         self,
@@ -2450,15 +1784,7 @@ class User(TelegramObject):
         Returns:
             :class:`telegram.UserChatBoosts`: On success, returns the boosts applied by the user.
         """
-        return await self.get_bot().get_user_chat_boosts(
-            chat_id=chat_id,
-            user_id=self.id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def refund_star_payment(
         self,
@@ -2482,15 +1808,7 @@ class User(TelegramObject):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().refund_star_payment(
-            user_id=self.id,
-            telegram_payment_charge_id=telegram_payment_charge_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def verify(
         self,
@@ -2514,15 +1832,7 @@ class User(TelegramObject):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().verify_user(
-            user_id=self.id,
-            custom_description=custom_description,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def remove_verification(
         self,
@@ -2545,14 +1855,7 @@ class User(TelegramObject):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().remove_user_verification(
-            user_id=self.id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def repost_story(
         self,
@@ -2583,19 +1886,7 @@ class User(TelegramObject):
             :class:`Story`: On success, :class:`Story` is returned.
 
         """
-        return await self.get_bot().repost_story(
-            business_connection_id=business_connection_id,
-            from_chat_id=self.id,
-            from_story_id=from_story_id,
-            active_period=active_period,
-            post_to_chat_page=post_to_chat_page,
-            protect_content=protect_content,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def get_gifts(
         self,
@@ -2626,22 +1917,7 @@ class User(TelegramObject):
         Returns:
             :class:`telegram.OwnedGifts`: On success, returns the gifts owned by the user.
         """
-        return await self.get_bot().get_user_gifts(
-            user_id=self.id,
-            exclude_unlimited=exclude_unlimited,
-            exclude_limited_upgradable=exclude_limited_upgradable,
-            exclude_limited_non_upgradable=exclude_limited_non_upgradable,
-            exclude_from_blockchain=exclude_from_blockchain,
-            exclude_unique=exclude_unique,
-            sort_by_price=sort_by_price,
-            offset=offset,
-            limit=limit,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def get_profile_audios(
         self,
@@ -2667,16 +1943,7 @@ class User(TelegramObject):
             :class:`telegram.UserProfileAudios`
 
         """
-        return await self.get_bot().get_user_profile_audios(
-            user_id=self.id,
-            offset=offset,
-            limit=limit,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def set_chat_member_tag(
         self,
@@ -2702,13 +1969,4 @@ class User(TelegramObject):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().set_chat_member_tag(
-            user_id=self.id,
-            chat_id=chat_id,
-            tag=tag,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass

@@ -70,37 +70,13 @@ def decrypt(secret, hash, data):
         :obj:`bytes`: The decrypted data as bytes.
 
     """
-    if not CRYPTO_INSTALLED:
-        raise RuntimeError(
-            "To use Telegram Passports, PTB must be installed via `pip install "
-            '"python-telegram-bot[passport]"`.'
-        )
-    # Make a SHA512 hash of secret + update
-    digest = Hash(SHA512(), backend=default_backend())
-    digest.update(secret + hash)
-    secret_hash_hash = digest.finalize()
-    # First 32 chars is our key, next 16 is the initialisation vector
-    key, init_vector = secret_hash_hash[:32], secret_hash_hash[32 : 32 + 16]
-    # Init a AES-CBC cipher and decrypt the data
-    cipher = Cipher(AES(key), CBC(init_vector), backend=default_backend())
-    decryptor = cipher.decryptor()
-    data = decryptor.update(data) + decryptor.finalize()
-    # Calculate SHA256 hash of the decrypted data
-    digest = Hash(SHA256(), backend=default_backend())
-    digest.update(data)
-    data_hash = digest.finalize()
-    # If the newly calculated hash did not match the one telegram gave us
-    if data_hash != hash:
-        # Raise a error that is caught inside telegram.PassportData and transformed into a warning
-        raise PassportDecryptionError(f"Hashes are not equal! {data_hash} != {hash}")
-    # Return data without padding
-    return data[data[0] :]
+    pass
 
 
 @no_type_check
 def decrypt_json(secret, hash, data):
     """Decrypts data using secret and hash and then decodes utf-8 string and loads json"""
-    return json.loads(decrypt(secret, hash, data).decode(TextEncoding.UTF_8))
+    pass
 
 
 class EncryptedCredentials(TelegramObject):
@@ -169,27 +145,7 @@ class EncryptedCredentials(TelegramObject):
             telegram.error.PassportDecryptionError: Decryption failed. Usually due to bad
                 private/public key but can also suggest malformed/tampered data.
         """
-        if self._decrypted_secret is None:
-            if not CRYPTO_INSTALLED:
-                raise RuntimeError(
-                    "To use Telegram Passports, PTB must be installed via `pip install "
-                    '"python-telegram-bot[passport]"`.'
-                )
-            # Try decrypting according to step 1 at
-            # https://core.telegram.org/passport#decrypting-data
-            # We make sure to base64 decode the secret first.
-            # Telegram says to use OAEP padding so we do that. The Mask Generation Function
-            # is the default for OAEP, the algorithm is the default for PHP which is what
-            # Telegram's backend servers run.
-            try:
-                self._decrypted_secret = self.get_bot().private_key.decrypt(  # type: ignore
-                    b64decode(self.secret),
-                    OAEP(mgf=MGF1(algorithm=SHA1()), algorithm=SHA1(), label=None),  # skipcq
-                )
-            except ValueError as exception:
-                # If decryption fails raise exception
-                raise PassportDecryptionError(exception) from exception
-        return self._decrypted_secret
+        pass
 
     @property
     def decrypted_data(self) -> "Credentials":
@@ -202,12 +158,7 @@ class EncryptedCredentials(TelegramObject):
             telegram.error.PassportDecryptionError: Decryption failed. Usually due to bad
                 private/public key but can also suggest malformed/tampered data.
         """
-        if self._decrypted_data is None:
-            self._decrypted_data = Credentials.de_json(
-                decrypt_json(self.decrypted_secret, b64decode(self.hash), b64decode(self.data)),
-                self.get_bot(),
-            )
-        return self._decrypted_data
+        pass
 
 
 class Credentials(TelegramObject):

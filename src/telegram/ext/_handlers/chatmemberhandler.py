@@ -109,18 +109,4 @@ class ChatMemberHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        if not isinstance(update, Update):
-            return False
-        if not (update.my_chat_member or update.chat_member):
-            return False
-        if (
-            self._chat_ids
-            and update.effective_chat
-            and update.effective_chat.id not in self._chat_ids
-        ):
-            return False
-        if self.chat_member_types == self.ANY_CHAT_MEMBER:
-            return True
-        if self.chat_member_types == self.CHAT_MEMBER:
-            return bool(update.chat_member)
-        return bool(update.my_chat_member)
+        pass

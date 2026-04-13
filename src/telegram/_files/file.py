@@ -108,15 +108,8 @@ class File(TelegramObject):
 
     def _get_encoded_url(self) -> str:
         """Convert any UTF-8 char in :obj:`File.file_path` into a url encoded ASCII string."""
-        sres = urllib_parse.urlsplit(str(self.file_path))
-        return urllib_parse.urlunsplit(
-            urllib_parse.SplitResult(
-                sres.scheme, sres.netloc, urllib_parse.quote(sres.path), sres.query, sres.fragment
-            )
-        )
+        pass
 
-    def _prepare_decrypt(self, buf: bytes) -> bytes:
-        return decrypt(b64decode(self._credentials.secret), b64decode(self._credentials.hash), buf)
 
     async def download_to_drive(
         self,
@@ -184,45 +177,7 @@ class File(TelegramObject):
             RuntimeError: If :attr:`file_path` is not set.
 
         """
-        if not self.file_path:
-            raise RuntimeError("No `file_path` available for this file. Can not download.")
-
-        local_file = is_local_file(self.file_path)
-        url = None if local_file else self._get_encoded_url()
-
-        # if _credentials exists we want to decrypt the file
-        if local_file and self._credentials:
-            file_to_decrypt = Path(self.file_path)
-            buf = self._prepare_decrypt(file_to_decrypt.read_bytes())
-            if custom_path is not None:
-                path = Path(custom_path)
-            else:
-                path = Path(str(file_to_decrypt.parent) + "/decrypted_" + file_to_decrypt.name)
-            path.write_bytes(buf)
-            return path
-
-        if custom_path is not None and local_file:
-            shutil.copyfile(self.file_path, str(custom_path))
-            return Path(custom_path)
-
-        if custom_path:
-            filename = Path(custom_path)
-        elif local_file:
-            return Path(self.file_path)
-        else:
-            filename = Path(Path(self.file_path).name)
-
-        buf = await self.get_bot().request.retrieve(
-            url,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-        )
-        if self._credentials:
-            buf = self._prepare_decrypt(buf)
-        filename.write_bytes(buf)
-        return filename
+        pass
 
     async def download_to_memory(
         self,
@@ -272,25 +227,7 @@ class File(TelegramObject):
         Raises:
             RuntimeError: If :attr:`file_path` is not set.
         """
-        if not self.file_path:
-            raise RuntimeError("No `file_path` available for this file. Can not download.")
-
-        local_file = is_local_file(self.file_path)
-        url = None if local_file else self._get_encoded_url()
-        path = Path(self.file_path) if local_file else None
-        if local_file:
-            buf = path.read_bytes()
-        else:
-            buf = await self.get_bot().request.retrieve(
-                url,
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-            )
-        if self._credentials:
-            buf = self._prepare_decrypt(buf)
-        out.write(buf)
+        pass
 
     async def download_as_bytearray(
         self,
@@ -341,27 +278,7 @@ class File(TelegramObject):
             RuntimeError: If :attr:`file_path` is not set.
 
         """
-        if not self.file_path:
-            raise RuntimeError("No `file_path` available for this file. Can not download.")
-
-        if buf is None:
-            buf = bytearray()
-
-        if is_local_file(self.file_path):
-            bytes_data = Path(self.file_path).read_bytes()
-        else:
-            bytes_data = await self.get_bot().request.retrieve(
-                self._get_encoded_url(),
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-            )
-        if self._credentials:
-            buf.extend(self._prepare_decrypt(bytes_data))
-        else:
-            buf.extend(bytes_data)
-        return buf
+        pass
 
     def set_credentials(self, credentials: "FileCredentials") -> None:
         """Sets the passport credentials for the file.
@@ -369,4 +286,4 @@ class File(TelegramObject):
         Args:
             credentials (:class:`telegram.FileCredentials`): The credentials.
         """
-        self._credentials = credentials
+        pass

@@ -110,14 +110,4 @@ class ShippingQuery(TelegramObject):
         :meth:`telegram.Bot.answer_shipping_query`.
 
         """
-        return await self.get_bot().answer_shipping_query(
-            shipping_query_id=self.id,
-            ok=ok,
-            shipping_options=shipping_options,
-            error_message=error_message,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass

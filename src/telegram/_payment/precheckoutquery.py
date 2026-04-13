@@ -139,13 +139,4 @@ class PreCheckoutQuery(TelegramObject):
         :meth:`telegram.Bot.answer_pre_checkout_query`.
 
         """
-        return await self.get_bot().answer_pre_checkout_query(
-            pre_checkout_query_id=self.id,
-            ok=ok,
-            error_message=error_message,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass

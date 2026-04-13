@@ -105,14 +105,7 @@ class PassportData(TelegramObject):
             telegram.error.PassportDecryptionError: Decryption failed. Usually due to bad
                 private/public key but can also suggest malformed/tampered data.
         """
-        if self._decrypted_data is None:
-            self._decrypted_data = tuple(  # type: ignore[assignment]
-                EncryptedPassportElement.de_json_decrypted(
-                    element.to_dict(), self.get_bot(), self.decrypted_credentials
-                )
-                for element in self.data
-            )
-        return self._decrypted_data  # type: ignore[return-value]
+        pass
 
     @property
     def decrypted_credentials(self) -> "Credentials":
@@ -125,4 +118,4 @@ class PassportData(TelegramObject):
             telegram.error.PassportDecryptionError: Decryption failed. Usually due to bad
                 private/public key but can also suggest malformed/tampered data.
         """
-        return self.credentials.decrypted_data
+        pass

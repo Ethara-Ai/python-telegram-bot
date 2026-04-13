@@ -138,7 +138,7 @@ class InlineKeyboardMarkup(TelegramObject):
                     |sequenceargs|
 
         """
-        return cls([button_row], **kwargs)  # type: ignore[arg-type]
+        pass
 
     @classmethod
     def from_column(
@@ -158,5 +158,4 @@ class InlineKeyboardMarkup(TelegramObject):
                     |sequenceargs|
 
         """
-        button_grid = [[button] for button in button_column]
-        return cls(button_grid, **kwargs)  # type: ignore[arg-type]
+        pass

@@ -72,9 +72,7 @@ class TrackingDict(UserDict, Generic[_KT, _VT]):
 
     def pop_accessed_keys(self) -> set[_KT]:
         """Returns all keys that were write-accessed since the last time this method was called."""
-        out = self._write_access_keys
-        self._write_access_keys = set()
-        return out
+        pass
 
     def pop_accessed_write_items(self) -> list[tuple[_KT, _VT]]:
         """
@@ -95,8 +93,7 @@ class TrackingDict(UserDict, Generic[_KT, _VT]):
 
     def update_no_track(self, mapping: Mapping[_KT, _VT]) -> None:
         """Like ``update``, but doesn't count towards write access."""
-        for key, value in mapping.items():
-            self.data[key] = value
+        pass
 
     # Mypy seems a bit inconsistent about what it wants as types for `default` and return value
     # so we just ignore a bit
@@ -117,10 +114,3 @@ class TrackingDict(UserDict, Generic[_KT, _VT]):
 
     # Mypy seems a bit inconsistent about what it wants as types for `default` and return value
     # so we just ignore a bit
-    def setdefault(self: "TrackingDict[_KT, _T]", key: _KT, default: _T | None = None) -> _T:
-        if key in self:
-            return self[key]
-
-        self.__track_write(key)
-        self[key] = default  # type: ignore[assignment]
-        return default  # type: ignore[return-value]

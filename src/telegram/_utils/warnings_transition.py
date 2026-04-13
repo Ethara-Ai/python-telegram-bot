@@ -41,11 +41,7 @@ def build_deprecation_warning_message(
 
     Returns a warning message that can be used in `warn` function.
     """
-    return (
-        f"The {object_type} '{deprecated_name}' was replaced by '{new_name}' in Bot API "
-        f"{bot_api_version}. We recommend using '{new_name}' instead of "
-        f"'{deprecated_name}'."
-    )
+    pass
 
 
 # Narrower type hints will cause linting errors and/or circular imports.
@@ -69,30 +65,7 @@ def warn_about_deprecated_arg_return_new_arg(
     Raises `ValueError` if both `deprecated_arg` and `new_arg` objects were passed, and they are
     different.
     """
-    if deprecated_arg and new_arg and deprecated_arg != new_arg:
-        base_message = build_deprecation_warning_message(
-            deprecated_name=deprecated_arg_name,
-            new_name=new_arg_name,
-            object_type="parameter",
-            bot_api_version=bot_api_version,
-        )
-        raise ValueError(
-            f"You passed different entities as '{deprecated_arg_name}' and '{new_arg_name}'. "
-            f"{base_message}"
-        )
-
-    if deprecated_arg:
-        warn_callback(
-            PTBDeprecationWarning(
-                ptb_version,
-                f"Bot API {bot_api_version} renamed the argument '{deprecated_arg_name}' to "
-                f"'{new_arg_name}'.",
-            ),
-            stacklevel=stacklevel + 1,  # type: ignore[call-arg]
-        )
-        return deprecated_arg
-
-    return new_arg
+    pass
 
 
 def warn_about_deprecated_attr_in_property(
@@ -106,11 +79,4 @@ def warn_about_deprecated_attr_in_property(
 
     The properties replace deprecated attributes in classes and issue these deprecation warnings.
     """
-    warn(
-        PTBDeprecationWarning(
-            ptb_version,
-            f"Bot API {bot_api_version} renamed the attribute '{deprecated_attr_name}' to "
-            f"'{new_attr_name}'.",
-        ),
-        stacklevel=stacklevel + 1,
-    )
+    pass

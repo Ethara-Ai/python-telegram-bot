@@ -508,8 +508,6 @@ class BusinessOpeningHoursInterval(TelegramObject):
 
         self._freeze()
 
-    def _parse_minute(self, minute: int) -> tuple[int, int, int]:
-        return (minute // 1440, minute % 1440 // 60, minute % 1440 % 60)
 
     @property
     def opening_time(self) -> tuple[int, int, int]:
@@ -520,9 +518,7 @@ class BusinessOpeningHoursInterval(TelegramObject):
         Returns:
             tuple[:obj:`int`, :obj:`int`, :obj:`int`]:
         """
-        if self._opening_time is None:
-            self._opening_time = self._parse_minute(self.opening_minute)
-        return self._opening_time
+        pass
 
     @property
     def closing_time(self) -> tuple[int, int, int]:
@@ -533,9 +529,7 @@ class BusinessOpeningHoursInterval(TelegramObject):
         Returns:
             tuple[:obj:`int`, :obj:`int`, :obj:`int`]:
         """
-        if self._closing_time is None:
-            self._closing_time = self._parse_minute(self.closing_minute)
-        return self._closing_time
+        pass
 
 
 class BusinessOpeningHours(TelegramObject):
@@ -582,11 +576,6 @@ class BusinessOpeningHours(TelegramObject):
 
         self._freeze()
 
-    @property
-    def _zone_info(self) -> ZoneInfo:
-        if self._cached_zone_info is None:
-            self._cached_zone_info = get_zone_info(self.time_zone_name)
-        return self._cached_zone_info
 
     def get_opening_hours_for_day(
         self, date: dtm.date, time_zone: dtm.tzinfo | str | None = None
@@ -606,49 +595,7 @@ class BusinessOpeningHours(TelegramObject):
             Each pair consists of ``(opening_time, closing_time)``.
             Returns an empty tuple if there are no opening hours for the given day.
         """
-
-        week_day = date.weekday()
-        res = []
-        if isinstance(time_zone, str):
-            tz_target: dtm.tzinfo = get_zone_info(time_zone)
-        elif time_zone is None:
-            tz_target = self._zone_info
-        else:
-            tz_target = time_zone
-
-        for interval in self.opening_hours:
-            int_open = interval.opening_time
-            int_close = interval.closing_time
-
-            if int_open[0] != week_day:
-                continue
-
-            # To get the correct localization, we first need to create the dtm object in
-            # self.time_zone_name, then convert it to the target timezone. We could check if
-            # self._zone_info == tz_target and skip the conversion, but it's not worth the added
-            # complexity.
-            result_int_open = dtm.datetime(
-                year=date.year,
-                month=date.month,
-                day=date.day,
-                hour=int_open[1],
-                minute=int_open[2],
-                tzinfo=self._zone_info,
-            ).astimezone(tz_target)
-
-            result_int_close = dtm.datetime(
-                year=date.year,
-                month=date.month,
-                day=date.day,
-                hour=int_close[1],
-                minute=int_close[2],
-                tzinfo=self._zone_info,
-            ).astimezone(tz_target)
-
-            res.append((result_int_open, result_int_close))
-
-        # The sorting is currently an implementation detail
-        return tuple(sorted(res, key=lambda x: x[0]))
+        pass
 
     def is_open(self, datetime: dtm.datetime) -> bool:
         """Check if the business is open at the specified datetime.
@@ -663,21 +610,7 @@ class BusinessOpeningHours(TelegramObject):
         Returns:
             :obj:`bool`: True if the business is open at the specified time, False otherwise.
         """
-
-        datetime_in_native_tz = (
-            datetime.replace(tzinfo=self._zone_info) if datetime.tzinfo is None else datetime
-        ).astimezone(self._zone_info)
-        minute_of_week = (
-            datetime_in_native_tz.weekday() * 1440
-            + datetime_in_native_tz.hour * 60
-            + datetime_in_native_tz.minute
-        )
-
-        for interval in self.opening_hours:
-            if interval.opening_minute <= minute_of_week < interval.closing_minute:
-                return True
-
-        return False
+        pass
 
     @classmethod
     def de_json(cls, data: JSONDict, bot: "Bot | None" = None) -> "BusinessOpeningHours":

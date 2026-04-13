@@ -55,27 +55,14 @@ def load_file(
     """If the input is a file handle, read the data and name and return it. Otherwise, return
     the input unchanged.
     """
-    if obj is None:
-        return None, None
-
-    try:
-        contents = obj.read()  # type: ignore[union-attr]
-    except AttributeError:
-        return None, cast("bytes | InputFile | str | Path", obj)
-
-    filename = guess_file_name(obj)
-
-    return filename, contents
+    pass
 
 
 def guess_file_name(obj: FileInput) -> str | None:
     """If the input is a file handle, read name and return it. Otherwise, return
     the input unchanged.
     """
-    if hasattr(obj, "name") and not isinstance(obj.name, int):
-        return Path(obj.name).name
-
-    return None
+    pass
 
 
 def is_local_file(obj: FilePathInput | None) -> bool:
@@ -85,14 +72,7 @@ def is_local_file(obj: FilePathInput | None) -> bool:
     Args:
         obj (:obj:`str`): The string to check.
     """
-    if obj is None:
-        return False
-
-    path = Path(obj)
-    try:
-        return path.is_file()
-    except Exception:
-        return False
+    pass
 
 
 def parse_file_input(  # pylint: disable=too-many-return-statements
@@ -135,26 +115,4 @@ def parse_file_input(  # pylint: disable=too-many-return-statements
         :obj:`str` | :class:`telegram.InputFile` | :obj:`object`: The parsed input or the untouched
         :attr:`file_input`, in case it's no valid file input.
     """
-    # Importing on file-level yields cyclic Import Errors
-    from telegram import InputFile  # pylint: disable=import-outside-toplevel  # noqa: PLC0415
-
-    if isinstance(file_input, str) and file_input.startswith("file://"):
-        if not local_mode:
-            raise ValueError("Specified file input is a file URI, but local mode is not enabled.")
-        return file_input
-    if isinstance(file_input, str | Path):
-        if is_local_file(file_input):
-            path = Path(file_input)
-            if local_mode:
-                return path.absolute().as_uri()
-            with path.open(mode="rb") as file_handle:
-                return InputFile(file_handle, filename=filename, attach=attach)
-
-        return file_input
-    if isinstance(file_input, bytes):
-        return InputFile(file_input, filename=filename, attach=attach)
-    if hasattr(file_input, "read"):
-        return InputFile(cast("IO", file_input), filename=filename, attach=attach)
-    if tg_type and isinstance(file_input, tg_type):
-        return file_input.file_id  # type: ignore[attr-defined]
-    return file_input
+    pass

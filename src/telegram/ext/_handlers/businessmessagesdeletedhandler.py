@@ -87,10 +87,4 @@ class BusinessMessagesDeletedHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        if isinstance(update, Update) and update.deleted_business_messages:
-            if not self._chat_ids and not self._usernames:
-                return True
-            if update.deleted_business_messages.chat.id in self._chat_ids:
-                return True
-            return update.deleted_business_messages.chat.username in self._usernames
-        return False
+        pass

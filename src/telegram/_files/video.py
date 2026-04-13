@@ -158,15 +158,7 @@ class Video(_BaseThumbedMedium):
             self._start_timestamp: dtm.timedelta | None = to_timedelta(start_timestamp)
             self.qualities: Sequence[VideoQuality] | None = parse_sequence_arg(qualities)
 
-    @property
-    def duration(self) -> int | dtm.timedelta:
-        return get_timedelta_value(  # type: ignore[return-value]
-            self._duration, attribute="duration"
-        )
 
-    @property
-    def start_timestamp(self) -> dtm.timedelta | None | int:
-        return get_timedelta_value(self._start_timestamp, attribute="start_timestamp")
 
     @classmethod
     def de_json(cls, data: JSONDict, bot: "Bot | None" = None) -> "Video":

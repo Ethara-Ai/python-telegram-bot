@@ -106,15 +106,6 @@ class InputMedia(TelegramObject):
 
         self._freeze()
 
-    @staticmethod
-    def _parse_thumbnail_input(thumbnail: "FileInput | None") -> str | InputFile | None:
-        # We use local_mode=True because we don't have access to the actual setting and want
-        # things to work in local mode.
-        return (
-            parse_file_input(thumbnail, attach=True, local_mode=True)
-            if thumbnail is not None
-            else thumbnail
-        )
 
 
 class InputPaidMedia(TelegramObject):
@@ -295,9 +286,6 @@ class InputPaidMediaVideo(InputPaidMedia):
             )
             self.start_timestamp: int | None = start_timestamp
 
-    @property
-    def duration(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._duration, attribute="duration")
 
 
 class InputMediaAnimation(InputMedia):
@@ -436,9 +424,6 @@ class InputMediaAnimation(InputMedia):
             self.has_spoiler: bool | None = has_spoiler
             self.show_caption_above_media: bool | None = show_caption_above_media
 
-    @property
-    def duration(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._duration, attribute="duration")
 
 
 class InputMediaPhoto(InputMedia):
@@ -696,9 +681,6 @@ class InputMediaVideo(InputMedia):
             )
             self.start_timestamp: int | None = start_timestamp
 
-    @property
-    def duration(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._duration, attribute="duration")
 
 
 class InputMediaAudio(InputMedia):
@@ -815,9 +797,6 @@ class InputMediaAudio(InputMedia):
             self.title: str | None = title
             self.performer: str | None = performer
 
-    @property
-    def duration(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._duration, attribute="duration")
 
 
 class InputMediaDocument(InputMedia):

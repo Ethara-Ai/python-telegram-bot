@@ -84,18 +84,6 @@ class WebhookServer:
         self._server_lock = asyncio.Lock()
         self._shutdown_lock = asyncio.Lock()
 
-    async def serve_forever(self, ready: asyncio.Event | None = None) -> None:
-        async with self._server_lock:
-            if self.unix:
-                self._http_server.add_socket(self.unix)
-            else:
-                self._http_server.listen(self.port, address=self.listen)
-
-            self.is_running = True
-            if ready is not None:
-                ready.set()
-
-            _LOGGER.debug("Webhook Server started.")
 
     async def shutdown(self) -> None:
         async with self._shutdown_lock:
@@ -140,18 +128,11 @@ class TelegramHandler(tornado.web.RequestHandler):
 
     def initialize(self, bot: "Bot", update_queue: asyncio.Queue, secret_token: str) -> None:
         """Initialize for each request - that's the interface provided by tornado"""
-        # pylint: disable=attribute-defined-outside-init
-        self.bot = bot
-        self.update_queue = update_queue
-        self.secret_token = secret_token
-        if secret_token:
-            _LOGGER.debug(
-                "The webhook server has a secret token, expecting it in incoming requests now"
-            )
+        pass
 
     def set_default_headers(self) -> None:
         """Sets default headers"""
-        self.set_header("Content-Type", 'application/json; charset="utf-8"')
+        pass
 
     async def post(self) -> None:
         """Handle incoming POST request"""
@@ -215,9 +196,4 @@ class TelegramHandler(tornado.web.RequestHandler):
         tb: TracebackType | None,
     ) -> None:
         """Override the default logging and instead use our custom logging."""
-        _LOGGER.debug(
-            "%s - %s",
-            self.request.remote_ip,
-            "Exception in TelegramHandler",
-            exc_info=(typ, value, tb) if typ and value and tb else value,
-        )
+        pass

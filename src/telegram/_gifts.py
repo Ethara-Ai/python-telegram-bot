@@ -415,10 +415,7 @@ class GiftInfo(TelegramObject):
             RuntimeError: If the gift info has no text.
 
         """
-        if not self.text:
-            raise RuntimeError("This GiftInfo has no 'text'.")
-
-        return parse_message_entity(self.text, entity)
+        pass
 
     def parse_entities(self, types: list[str] | None = None) -> dict[MessageEntity, str]:
         """
@@ -444,10 +441,7 @@ class GiftInfo(TelegramObject):
             RuntimeError: If the gift info has no text.
 
         """
-        if not self.text:
-            raise RuntimeError("This GiftInfo has no 'text'.")
-
-        return parse_message_entities(self.text, self.entities, types)
+        pass
 
 
 class AcceptedGiftTypes(TelegramObject):

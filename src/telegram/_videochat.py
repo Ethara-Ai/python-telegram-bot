@@ -100,11 +100,6 @@ class VideoChatEnded(TelegramObject):
 
         self._freeze()
 
-    @property
-    def duration(self) -> int | dtm.timedelta:
-        return get_timedelta_value(  # type: ignore[return-value]
-            self._duration, attribute="duration"
-        )
 
 
 class VideoChatParticipantsInvited(TelegramObject):

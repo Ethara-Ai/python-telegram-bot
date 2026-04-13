@@ -41,8 +41,7 @@ def _all_subclasses(cls: type[TelegramObj]) -> set[type[TelegramObj]]:
     """Gets all subclasses of the specified object, recursively. from
     https://stackoverflow.com/a/3862957/9706202
     """
-    subclasses = cls.__subclasses__()
-    return set(subclasses).union([s for c in subclasses for s in _all_subclasses(c)])
+    pass
 
 
 def _reconstruct_to(cls: type[TelegramObj], kwargs: dict) -> TelegramObj:
@@ -52,9 +51,7 @@ def _reconstruct_to(cls: type[TelegramObj], kwargs: dict) -> TelegramObj:
     This function should be kept in place for backwards compatibility even if the pickling logic
     is changed, since `_custom_reduction` places references to this function into the pickled data.
     """
-    obj = cls.__new__(cls)
-    obj.__setstate__(kwargs)
-    return obj
+    pass
 
 
 def _custom_reduction(cls: TelegramObj) -> tuple[Callable, tuple[type[TelegramObj], dict]]:
@@ -62,11 +59,7 @@ def _custom_reduction(cls: TelegramObj) -> tuple[Callable, tuple[type[TelegramOb
     This method is used for pickling. The bot attribute is preserved so _BotPickler().persistent_id
     works as intended.
     """
-    data = cls._get_attrs(include_private=True)  # pylint: disable=protected-access
-    # MappingProxyType is not pickable, so we convert it to a dict
-    # no need to convert back to MPT in _reconstruct_to, since it's done in __setstate__
-    data["api_kwargs"] = dict(data["api_kwargs"])  # type: ignore[arg-type]
-    return _reconstruct_to, (cls.__class__, data)
+    pass
 
 
 class _BotPickler(pickle.Pickler):
@@ -83,24 +76,13 @@ class _BotPickler(pickle.Pickler):
         This method is used for pickling. The bot attribute is preserved so
         _BotPickler().persistent_id works as intended.
         """
-        if not isinstance(obj, TelegramObject):
-            return NotImplemented
-
-        return _custom_reduction(obj)
+        pass
 
     def persistent_id(self, obj: object) -> str | None:
         """Used to 'mark' the Bot, so it can be replaced later. See
         https://docs.python.org/3/library/pickle.html#pickle.Pickler.persistent_id for more info
         """
-        if obj is self._bot:
-            return _REPLACED_KNOWN_BOT
-        if isinstance(obj, Bot):
-            warn(
-                "Unknown bot instance found. Will be replaced by `None` during unpickling",
-                stacklevel=2,
-            )
-            return _REPLACED_UNKNOWN_BOT
-        return None  # pickles as usual
+        pass
 
 
 class _BotUnpickler(pickle.Unpickler):
@@ -112,11 +94,7 @@ class _BotUnpickler(pickle.Unpickler):
 
     def persistent_load(self, pid: str) -> Bot | None:
         """Replaces the bot with the current bot if known, else it is replaced by :obj:`None`."""
-        if pid == _REPLACED_KNOWN_BOT:
-            return self._bot
-        if pid == _REPLACED_UNKNOWN_BOT:
-            return None
-        raise pickle.UnpicklingError("Found unknown persistent id when unpickling!")
+        pass
 
 
 class PicklePersistence(BasePersistence[UD, CD, BD]):
@@ -242,40 +220,7 @@ class PicklePersistence(BasePersistence[UD, CD, BD]):
             "ContextTypes[Any, UD, CD, BD]", context_types or ContextTypes()
         )
 
-    def _load_singlefile(self) -> None:
-        try:
-            with self.filepath.open("rb") as file:
-                data = _BotUnpickler(self.bot, file).load()
 
-            self.user_data = data["user_data"]
-            self.chat_data = data["chat_data"]
-            # For backwards compatibility with files not containing bot data
-            self.bot_data = data.get("bot_data", self.context_types.bot_data())
-            self.callback_data = data.get("callback_data", {})
-            self.conversations = data["conversations"]
-        except OSError:
-            self.conversations = {}
-            self.user_data = {}
-            self.chat_data = {}
-            self.bot_data = self.context_types.bot_data()
-            self.callback_data = None
-        except pickle.UnpicklingError as exc:
-            filename = self.filepath.name
-            raise TypeError(f"File {filename} does not contain valid pickle data") from exc
-        except Exception as exc:
-            raise TypeError(f"Something went wrong unpickling {self.filepath.name}") from exc
-
-    def _load_file(self, filepath: Path) -> Any:
-        try:
-            with filepath.open("rb") as file:
-                return _BotUnpickler(self.bot, file).load()
-
-        except OSError:
-            return None
-        except pickle.UnpicklingError as exc:
-            raise TypeError(f"File {filepath.name} does not contain valid pickle data") from exc
-        except Exception as exc:
-            raise TypeError(f"Something went wrong unpickling {filepath.name}") from exc
 
     def _dump_singlefile(self) -> None:
         data = {
@@ -298,16 +243,7 @@ class PicklePersistence(BasePersistence[UD, CD, BD]):
         Returns:
             dict[:obj:`int`, :obj:`dict`]: The restored user data.
         """
-        if self.user_data:
-            pass
-        elif not self.single_file:
-            data = self._load_file(Path(f"{self.filepath}_user_data"))
-            if not data:
-                data = {}
-            self.user_data = data
-        else:
-            self._load_singlefile()
-        return deepcopy(self.user_data)  # type: ignore[arg-type]
+        pass
 
     async def get_chat_data(self) -> dict[int, CD]:
         """Returns the chat_data from the pickle file if it exists or an empty :obj:`dict`.
@@ -315,16 +251,7 @@ class PicklePersistence(BasePersistence[UD, CD, BD]):
         Returns:
             dict[:obj:`int`, :obj:`dict`]: The restored chat data.
         """
-        if self.chat_data:
-            pass
-        elif not self.single_file:
-            data = self._load_file(Path(f"{self.filepath}_chat_data"))
-            if not data:
-                data = {}
-            self.chat_data = data
-        else:
-            self._load_singlefile()
-        return deepcopy(self.chat_data)  # type: ignore[arg-type]
+        pass
 
     async def get_bot_data(self) -> BD:
         """Returns the bot_data from the pickle file if it exists or an empty object of type
@@ -333,16 +260,7 @@ class PicklePersistence(BasePersistence[UD, CD, BD]):
         Returns:
             :obj:`dict` | :attr:`telegram.ext.ContextTypes.bot_data`: The restored bot data.
         """
-        if self.bot_data:
-            pass
-        elif not self.single_file:
-            data = self._load_file(Path(f"{self.filepath}_bot_data"))
-            if not data:
-                data = self.context_types.bot_data()
-            self.bot_data = data
-        else:
-            self._load_singlefile()
-        return deepcopy(self.bot_data)  # type: ignore[return-value]
+        pass
 
     async def get_callback_data(self) -> CDCData | None:
         """Returns the callback data from the pickle file if it exists or :obj:`None`.
@@ -354,18 +272,7 @@ class PicklePersistence(BasePersistence[UD, CD, BD]):
             dict[:obj:`str`, :obj:`str`]] | :obj:`None`: The restored metadata or :obj:`None`,
             if no data was stored.
         """
-        if self.callback_data:
-            pass
-        elif not self.single_file:
-            data = self._load_file(Path(f"{self.filepath}_callback_data"))
-            if not data:
-                data = None
-            self.callback_data = data
-        else:
-            self._load_singlefile()
-        if self.callback_data is None:
-            return None
-        return deepcopy(self.callback_data)
+        pass
 
     async def get_conversations(self, name: str) -> ConversationDict:
         """Returns the conversations from the pickle file if it exists or an empty dict.
@@ -376,16 +283,7 @@ class PicklePersistence(BasePersistence[UD, CD, BD]):
         Returns:
             :obj:`dict`: The restored conversations for the handler.
         """
-        if self.conversations:
-            pass
-        elif not self.single_file:
-            data = self._load_file(Path(f"{self.filepath}_conversations"))
-            if not data:
-                data = {name: {}}
-            self.conversations = data
-        else:
-            self._load_singlefile()
-        return self.conversations.get(name, {}).copy()  # type: ignore[union-attr]
+        pass
 
     async def update_conversation(
         self, name: str, key: ConversationKey, new_state: object | None

@@ -158,38 +158,7 @@ class CallbackQueryHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        # pylint: disable=too-many-return-statements
-        if not (isinstance(update, Update) and update.callback_query):
-            return None
-
-        callback_data = update.callback_query.data
-        game_short_name = update.callback_query.game_short_name
-
-        if not any([self.pattern, self.game_pattern]):
-            return True
-
-        # we check for .data or .game_short_name from update to filter based on whats coming
-        # this gives xor-like behavior
-        if callback_data:
-            if not self.pattern:
-                return False
-            if isinstance(self.pattern, type):
-                return isinstance(callback_data, self.pattern)
-            if callable(self.pattern):
-                return self.pattern(callback_data)
-            if not isinstance(callback_data, str):
-                return False
-            if match := re.match(self.pattern, callback_data):
-                return match
-
-        elif game_short_name:
-            if not self.game_pattern:
-                return False
-            if match := re.match(self.game_pattern, game_short_name):
-                return match
-        else:
-            return True
-        return False
+        pass
 
     def collect_additional_context(
         self,
@@ -201,6 +170,4 @@ class CallbackQueryHandler(BaseHandler[Update, CCT, RT]):
         """Add the result of ``re.match(pattern, update.callback_query.data)`` to
         :attr:`CallbackContext.matches` as list with one element.
         """
-        if self.pattern:
-            check_result = cast("Match", check_result)
-            context.matches = [check_result]
+        pass

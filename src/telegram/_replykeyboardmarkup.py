@@ -275,15 +275,7 @@ class ReplyKeyboardMarkup(TelegramObject):
                 .. versionadded:: 20.0
 
         """
-        return cls(
-            [button_row],
-            resize_keyboard=resize_keyboard,
-            one_time_keyboard=one_time_keyboard,
-            selective=selective,
-            input_field_placeholder=input_field_placeholder,
-            is_persistent=is_persistent,
-            **kwargs,  # type: ignore[arg-type]
-        )
+        pass
 
     @classmethod
     def from_column(
@@ -337,16 +329,7 @@ class ReplyKeyboardMarkup(TelegramObject):
                 .. versionadded:: 20.0
 
         """
-        button_grid = [[button] for button in button_column]
-        return cls(
-            button_grid,
-            resize_keyboard=resize_keyboard,
-            one_time_keyboard=one_time_keyboard,
-            selective=selective,
-            input_field_placeholder=input_field_placeholder,
-            is_persistent=is_persistent,
-            **kwargs,  # type: ignore[arg-type]
-        )
+        pass
 
     MIN_INPUT_FIELD_PLACEHOLDER: Final[int] = constants.ReplyLimit.MIN_INPUT_FIELD_PLACEHOLDER
     """:const:`telegram.constants.ReplyLimit.MIN_INPUT_FIELD_PLACEHOLDER`

@@ -35,12 +35,6 @@ def build_repr_with_selected_attrs(obj: object, **kwargs: Any) -> str:
 
     Attributes that are to be used in the representation, are passed as kwargs.
     """
-    return (
-        f"{obj.__class__.__name__}"
-        # square brackets emphasize that an object cannot be instantiated with these params
-        f"[{', '.join(_stringify(name, value) for name, value in kwargs.items())}]"
-    )
+    pass
 
 
-def _stringify(key: str, val: Any) -> str:
-    return f"{key}={val.__qualname__ if callable(val) else val}"

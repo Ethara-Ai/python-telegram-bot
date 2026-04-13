@@ -132,11 +132,11 @@ class InputFile:
         Returns:
             tuple[:obj:`str`, :obj:`bytes` | :class:`IO`, :obj:`str`]:
         """
-        return self.filename, self.input_file_content, self.mimetype
+        pass
 
     @property
     def attach_uri(self) -> str | None:
         """URI to insert into the JSON data for uploading the file. Returns :obj:`None`, if
         :attr:`attach_name` is :obj:`None`.
         """
-        return f"attach://{self.attach_name}" if self.attach_name else None
+        pass

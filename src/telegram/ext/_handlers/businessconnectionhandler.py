@@ -87,10 +87,4 @@ class BusinessConnectionHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        if isinstance(update, Update) and update.business_connection:
-            if not self._user_ids and not self._usernames:
-                return True
-            if update.business_connection.user.id in self._user_ids:
-                return True
-            return update.business_connection.user.username in self._usernames
-        return False
+        pass

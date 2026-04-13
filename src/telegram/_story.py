@@ -108,16 +108,4 @@ class Story(TelegramObject):
             :class:`Story`: On success, :class:`Story` is returned.
 
         """
-        return await self.get_bot().repost_story(
-            business_connection_id=business_connection_id,
-            from_chat_id=self.chat.id,
-            from_story_id=self.id,
-            active_period=active_period,
-            post_to_chat_page=post_to_chat_page,
-            protect_content=protect_content,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass

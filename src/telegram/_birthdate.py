@@ -84,9 +84,4 @@ class Birthdate(TelegramObject):
         Returns:
             :obj:`datetime.date`: The birthdate as a date object.
         """
-        if self.year is None and year is None:
-            raise ValueError(
-                "The `year` argument is required if the `year` attribute was not present."
-            )
-
-        return dtm.date(year or self.year, self.month, self.day)  # type: ignore[arg-type]
+        pass

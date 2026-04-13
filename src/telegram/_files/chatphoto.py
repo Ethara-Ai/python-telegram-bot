@@ -125,14 +125,7 @@ class ChatPhoto(TelegramObject):
             :class:`telegram.error.TelegramError`
 
         """
-        return await self.get_bot().get_file(
-            file_id=self.small_file_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def get_big_file(
         self,
@@ -156,14 +149,7 @@ class ChatPhoto(TelegramObject):
             :class:`telegram.error.TelegramError`
 
         """
-        return await self.get_bot().get_file(
-            file_id=self.big_file_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     SIZE_SMALL: Final[int] = constants.ChatPhotoSize.SMALL
     """:const:`telegram.constants.ChatPhotoSize.SMALL`

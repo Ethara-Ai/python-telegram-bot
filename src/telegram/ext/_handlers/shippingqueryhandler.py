@@ -66,4 +66,4 @@ class ShippingQueryHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        return isinstance(update, Update) and bool(update.shipping_query)
+        pass

@@ -106,25 +106,4 @@ class ChatBoostHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        if not isinstance(update, Update):
-            return False
-
-        if not (update.chat_boost or update.removed_chat_boost):
-            return False
-
-        if self.chat_boost_types == self.CHAT_BOOST and not update.chat_boost:
-            return False
-
-        if self.chat_boost_types == self.REMOVED_CHAT_BOOST and not update.removed_chat_boost:
-            return False
-
-        if not any((self._chat_ids, self._chat_usernames)):
-            return True
-
-        # Extract chat and user IDs and usernames from the update for comparison
-        chat_id = chat.id if (chat := update.effective_chat) else None
-        chat_username = chat.username if chat else None
-
-        return bool(self._chat_ids and (chat_id in self._chat_ids)) or bool(
-            self._chat_usernames and (chat_username in self._chat_usernames)
-        )
+        pass

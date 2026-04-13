@@ -42,15 +42,5 @@ class TrackedBoundedSemaphore(asyncio.BoundedSemaphore):
         super().__init__(value)
         self._current_value = value
 
-    @property
-    def current_value(self) -> int:
-        return self._current_value
 
-    async def acquire(self) -> Literal[True]:
-        await super().acquire()
-        self._current_value -= 1
-        return True
 
-    def release(self) -> None:
-        super().release()
-        self._current_value += 1

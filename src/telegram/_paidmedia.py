@@ -164,9 +164,6 @@ class PaidMediaPreview(PaidMedia):
 
             self._id_attrs = (self.type, self.width, self.height, self._duration)
 
-    @property
-    def duration(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._duration, attribute="duration")
 
 
 class PaidMediaPhoto(PaidMedia):

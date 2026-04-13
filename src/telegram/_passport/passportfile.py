@@ -132,11 +132,7 @@ class PassportFile(TelegramObject):
             :class:`telegram.PassportFile`:
 
         """
-        data = cls._parse_data(data)
-
-        data["credentials"] = credentials
-
-        return super().de_json(data=data, bot=bot)
+        pass
 
     @classmethod
     def de_list_decrypted(
@@ -169,13 +165,7 @@ class PassportFile(TelegramObject):
             tuple[:class:`telegram.PassportFile`]:
 
         """
-        return tuple(
-            obj
-            for obj in (
-                cls.de_json_decrypted(passport_file, bot, credentials[i])
-                for i, passport_file in enumerate(data)
-            )
-        )
+        pass
 
     async def get_file(
         self,
@@ -200,14 +190,4 @@ class PassportFile(TelegramObject):
             :class:`telegram.error.TelegramError`
 
         """
-        file = await self.get_bot().get_file(
-            file_id=self.file_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
-        if self._credentials:
-            file.set_credentials(self._credentials)
-        return file
+        pass

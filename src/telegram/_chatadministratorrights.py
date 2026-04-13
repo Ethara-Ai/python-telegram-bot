@@ -278,4 +278,4 @@ class ChatAdministratorRights(TelegramObject):
 
         .. versionadded:: 20.0
         """
-        return cls(*(False,) * len(cls.__slots__))
+        pass

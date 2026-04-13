@@ -73,11 +73,7 @@ class RequestParameter:
         The latter can currently only happen if :attr:`input_files` has exactly one element that
         must not be uploaded via an attach:// URI.
         """
-        if isinstance(self.value, str):
-            return self.value
-        if self.value is None:
-            return None
-        return json.dumps(self.value)
+        pass
 
     @property
     def multipart_data(self) -> UploadFileDict | None:
@@ -86,12 +82,7 @@ class RequestParameter:
         .. versionchanged:: 21.5
             Content may now be a file handle.
         """
-        if not self.input_files:
-            return None
-        return {
-            (input_file.attach_name or self.name): input_file.field_tuple
-            for input_file in self.input_files
-        }
+        pass
 
     @staticmethod
     def _value_and_input_files_from_input(  # pylint: disable=too-many-return-statements

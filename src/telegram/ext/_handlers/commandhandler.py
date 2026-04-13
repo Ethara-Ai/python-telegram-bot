@@ -159,12 +159,7 @@ class CommandHandler(BaseHandler[Update, CCT, RT]):
         Returns:
             :obj:`bool`: Whether the args are valid for this handler.
         """
-        return bool(
-            (self.has_args is None)
-            or (self.has_args is True and args)
-            or (self.has_args is False and not args)
-            or (isinstance(self.has_args, int) and len(args) == self.has_args)
-        )
+        pass
 
     def check_update(
         self, update: object
@@ -178,35 +173,7 @@ class CommandHandler(BaseHandler[Update, CCT, RT]):
             :obj:`list`: The list of args for the handler.
 
         """
-        if isinstance(update, Update) and update.effective_message:
-            message = update.effective_message
-
-            if (
-                message.entities
-                and message.entities[0].type == MessageEntity.BOT_COMMAND
-                and message.entities[0].offset == 0
-                and message.text
-                and message.get_bot()
-            ):
-                command = message.text[1 : message.entities[0].length]
-                args = message.text.split()[1:]
-                command_parts = command.split("@")
-                command_parts.append(message.get_bot().username)
-
-                if not (
-                    command_parts[0].lower() in self.commands
-                    and command_parts[1].lower() == message.get_bot().username.lower()
-                ):
-                    return None
-
-                if not self._check_correct_args(args):
-                    return None
-
-                filter_result = self.filters.check_update(update)
-                if filter_result:
-                    return args, filter_result
-                return False
-        return None
+        pass
 
     def collect_additional_context(
         self,
@@ -218,7 +185,4 @@ class CommandHandler(BaseHandler[Update, CCT, RT]):
         """Add text after the command to :attr:`CallbackContext.args` as list, split on single
         whitespaces and add output of data filters to :attr:`CallbackContext` as well.
         """
-        if isinstance(check_result, tuple):
-            context.args = check_result[0]
-            if isinstance(check_result[1], dict):
-                context.update(check_result[1])
+        pass

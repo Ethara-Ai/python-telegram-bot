@@ -100,10 +100,4 @@ class ChatJoinRequestHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        if isinstance(update, Update) and update.chat_join_request:
-            if not self._chat_ids and not self._usernames:
-                return True
-            if update.chat_join_request.chat.id in self._chat_ids:
-                return True
-            return update.chat_join_request.from_user.username in self._usernames
-        return False
+        pass

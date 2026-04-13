@@ -187,18 +187,7 @@ class CallbackQuery(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().answer_callback_query(
-            callback_query_id=self.id,
-            text=text,
-            show_alert=show_alert,
-            url=url,
-            cache_time=cache_time,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     def _get_message(self, action: str = "edit") -> Message:
         """Helper method to get the message for the shortcut methods. Must be called only
@@ -247,38 +236,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        if self.inline_message_id:
-            return await self.get_bot().edit_message_text(
-                inline_message_id=self.inline_message_id,
-                text=text,
-                parse_mode=parse_mode,
-                disable_web_page_preview=disable_web_page_preview,
-                link_preview_options=link_preview_options,
-                reply_markup=reply_markup,
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-                api_kwargs=api_kwargs,
-                entities=entities,
-                chat_id=None,
-                message_id=None,
-                # inline messages can not be sent on behalf of a bcid
-                business_connection_id=None,
-            )
-        return await self._get_message().edit_text(
-            text=text,
-            parse_mode=parse_mode,
-            disable_web_page_preview=disable_web_page_preview,
-            link_preview_options=link_preview_options,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            entities=entities,
-        )
+        pass
 
     async def edit_message_caption(
         self,
@@ -318,36 +276,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        if self.inline_message_id:
-            return await self.get_bot().edit_message_caption(
-                caption=caption,
-                inline_message_id=self.inline_message_id,
-                reply_markup=reply_markup,
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-                parse_mode=parse_mode,
-                api_kwargs=api_kwargs,
-                caption_entities=caption_entities,
-                chat_id=None,
-                message_id=None,
-                show_caption_above_media=show_caption_above_media,
-                # inline messages can not be sent on behalf of a bcid
-                business_connection_id=None,
-            )
-        return await self._get_message().edit_caption(
-            caption=caption,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            parse_mode=parse_mode,
-            api_kwargs=api_kwargs,
-            caption_entities=caption_entities,
-            show_caption_above_media=show_caption_above_media,
-        )
+        pass
 
     async def edit_message_checklist(
         self,
@@ -376,15 +305,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        return await self._get_message().edit_checklist(
-            checklist=checklist,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def edit_message_reply_markup(
         self,
@@ -421,28 +342,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        if self.inline_message_id:
-            return await self.get_bot().edit_message_reply_markup(
-                reply_markup=reply_markup,
-                inline_message_id=self.inline_message_id,
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-                api_kwargs=api_kwargs,
-                chat_id=None,
-                message_id=None,
-                # inline messages can not be sent on behalf of a bcid
-                business_connection_id=None,
-            )
-        return await self._get_message().edit_reply_markup(
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def edit_message_media(
         self,
@@ -479,30 +379,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        if self.inline_message_id:
-            return await self.get_bot().edit_message_media(
-                inline_message_id=self.inline_message_id,
-                media=media,
-                reply_markup=reply_markup,
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-                api_kwargs=api_kwargs,
-                chat_id=None,
-                message_id=None,
-                # inline messages can not be sent on behalf of a bcid
-                business_connection_id=None,
-            )
-        return await self._get_message().edit_media(
-            media=media,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def edit_message_live_location(
         self,
@@ -546,42 +423,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        if self.inline_message_id:
-            return await self.get_bot().edit_message_live_location(
-                inline_message_id=self.inline_message_id,
-                latitude=latitude,
-                longitude=longitude,
-                location=location,
-                reply_markup=reply_markup,
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-                api_kwargs=api_kwargs,
-                horizontal_accuracy=horizontal_accuracy,
-                heading=heading,
-                proximity_alert_radius=proximity_alert_radius,
-                live_period=live_period,
-                chat_id=None,
-                message_id=None,
-                # inline messages can not be sent on behalf of a bcid
-                business_connection_id=None,
-            )
-        return await self._get_message().edit_live_location(
-            latitude=latitude,
-            longitude=longitude,
-            location=location,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            horizontal_accuracy=horizontal_accuracy,
-            heading=heading,
-            proximity_alert_radius=proximity_alert_radius,
-            live_period=live_period,
-        )
+        pass
 
     async def stop_message_live_location(
         self,
@@ -618,28 +460,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        if self.inline_message_id:
-            return await self.get_bot().stop_message_live_location(
-                inline_message_id=self.inline_message_id,
-                reply_markup=reply_markup,
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-                api_kwargs=api_kwargs,
-                chat_id=None,
-                message_id=None,
-                # inline messages can not be sent on behalf of a bcid
-                business_connection_id=None,
-            )
-        return await self._get_message().stop_live_location(
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def set_game_score(
         self,
@@ -678,32 +499,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        if self.inline_message_id:
-            return await self.get_bot().set_game_score(
-                inline_message_id=self.inline_message_id,
-                user_id=user_id,
-                score=score,
-                force=force,
-                disable_edit_message=disable_edit_message,
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-                api_kwargs=api_kwargs,
-                chat_id=None,
-                message_id=None,
-            )
-        return await self._get_message().set_game_score(
-            user_id=user_id,
-            score=score,
-            force=force,
-            disable_edit_message=disable_edit_message,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def get_game_high_scores(
         self,
@@ -739,26 +535,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        if self.inline_message_id:
-            return await self.get_bot().get_game_high_scores(
-                inline_message_id=self.inline_message_id,
-                user_id=user_id,
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-                api_kwargs=api_kwargs,
-                chat_id=None,
-                message_id=None,
-            )
-        return await self._get_message().get_game_high_scores(
-            user_id=user_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def delete_message(
         self,
@@ -785,13 +562,7 @@ class CallbackQuery(TelegramObject):
             :exc:`TypeError` if :attr:`message` is not accessible.
 
         """
-        return await self._get_message(action="delete").delete(
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def pin_message(
         self,
@@ -818,14 +589,7 @@ class CallbackQuery(TelegramObject):
         Raises:
             :exc:`TypeError` if :attr:`message` is not accessible.
         """
-        return await self._get_message(action="pin").pin(
-            disable_notification=disable_notification,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def unpin_message(
         self,
@@ -851,13 +615,7 @@ class CallbackQuery(TelegramObject):
         Raises:
             :exc:`TypeError` if :attr:`message` is not accessible.
         """
-        return await self._get_message(action="unpin").unpin(
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def copy_message(
         self,

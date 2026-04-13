@@ -188,7 +188,7 @@ class PollOption(TelegramObject):
         Returns:
             :obj:`str`: The text of the given entity.
         """
-        return parse_message_entity(self.text, entity)
+        pass
 
     def parse_entities(self, types: list[str] | None = None) -> dict[MessageEntity, str]:
         """
@@ -212,7 +212,7 @@ class PollOption(TelegramObject):
             dict[:class:`telegram.MessageEntity`, :obj:`str`]: A dictionary of entities mapped to
             the text that belongs to them, calculated based on UTF-16 codepoints.
         """
-        return parse_message_entities(self.text, self.text_entities, types)
+        pass
 
     MIN_LENGTH: Final[int] = constants.PollLimit.MIN_OPTION_LENGTH
     """:const:`telegram.constants.PollLimit.MIN_OPTION_LENGTH`
@@ -474,9 +474,6 @@ class Poll(TelegramObject):
 
         self._freeze()
 
-    @property
-    def open_period(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._open_period, attribute="open_period")
 
     @classmethod
     def de_json(cls, data: JSONDict, bot: "Bot | None" = None) -> "Poll":
@@ -517,10 +514,7 @@ class Poll(TelegramObject):
             RuntimeError: If the poll has no explanation.
 
         """
-        if not self.explanation:
-            raise RuntimeError("This Poll has no 'explanation'.")
-
-        return parse_message_entity(self.explanation, entity)
+        pass
 
     def parse_explanation_entities(
         self, types: list[str] | None = None
@@ -548,10 +542,7 @@ class Poll(TelegramObject):
             RuntimeError: If the poll has no explanation.
 
         """
-        if not self.explanation:
-            raise RuntimeError("This Poll has no 'explanation'.")
-
-        return parse_message_entities(self.explanation, self.explanation_entities, types)
+        pass
 
     def parse_question_entity(self, entity: MessageEntity) -> str:
         """Returns the text in :attr:`question` from a given :class:`telegram.MessageEntity` of
@@ -571,7 +562,7 @@ class Poll(TelegramObject):
         Returns:
             :obj:`str`: The text of the given entity.
         """
-        return parse_message_entity(self.question, entity)
+        pass
 
     def parse_question_entities(self, types: list[str] | None = None) -> dict[MessageEntity, str]:
         """
@@ -596,7 +587,7 @@ class Poll(TelegramObject):
             the text that belongs to them, calculated based on UTF-16 codepoints.
 
         """
-        return parse_message_entities(self.question, self.question_entities, types)
+        pass
 
     REGULAR: Final[str] = constants.PollType.REGULAR
     """:const:`telegram.constants.PollType.REGULAR`"""

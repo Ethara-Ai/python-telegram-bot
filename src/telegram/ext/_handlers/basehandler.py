@@ -155,8 +155,7 @@ class BaseHandler(ABC, Generic[UT, CCT, RT]):
                 the application.
 
         """
-        self.collect_additional_context(context, update, application, check_result)
-        return await self.callback(update, context)
+        pass
 
     def collect_additional_context(
         self,

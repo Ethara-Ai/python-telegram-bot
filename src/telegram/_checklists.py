@@ -147,7 +147,7 @@ class ChecklistTask(TelegramObject):
         Returns:
             :obj:`str`: The text of the given entity.
         """
-        return parse_message_entity(self.text, entity)
+        pass
 
     def parse_entities(self, types: list[str] | None = None) -> dict[MessageEntity, str]:
         """
@@ -169,7 +169,7 @@ class ChecklistTask(TelegramObject):
             dict[:class:`telegram.MessageEntity`, :obj:`str`]: A dictionary of entities mapped to
             the text that belongs to them, calculated based on UTF-16 codepoints.
         """
-        return parse_message_entities(self.text, self.text_entities, types)
+        pass
 
 
 class Checklist(TelegramObject):
@@ -257,7 +257,7 @@ class Checklist(TelegramObject):
         Returns:
             :obj:`str`: The text of the given entity.
         """
-        return parse_message_entity(self.title, entity)
+        pass
 
     def parse_entities(self, types: list[str] | None = None) -> dict[MessageEntity, str]:
         """
@@ -279,7 +279,7 @@ class Checklist(TelegramObject):
             dict[:class:`telegram.MessageEntity`, :obj:`str`]: A dictionary of entities mapped to
             the text that belongs to them, calculated based on UTF-16 codepoints.
         """
-        return parse_message_entities(self.title, self.title_entities, types)
+        pass
 
 
 class ChecklistTasksDone(TelegramObject):

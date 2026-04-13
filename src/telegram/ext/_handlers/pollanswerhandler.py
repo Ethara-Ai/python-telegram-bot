@@ -67,4 +67,4 @@ class PollAnswerHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        return isinstance(update, Update) and bool(update.poll_answer)
+        pass

@@ -93,6 +93,4 @@ class TypeHandler(BaseHandler[UT, CCT, RT]):
             :obj:`bool`
 
         """
-        if not self.strict:
-            return isinstance(update, self.type)
-        return type(update) is self.type  # pylint: disable=unidiomatic-typecheck
+        pass

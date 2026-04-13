@@ -156,18 +156,7 @@ class PrefixHandler(BaseHandler[Update, CCT, RT]):
             :obj:`list`: The list of args for the handler.
 
         """
-        if isinstance(update, Update) and update.effective_message:
-            message = update.effective_message
-
-            if message.text:
-                text_list = message.text.split()
-                if text_list[0].lower() not in self.commands:
-                    return None
-                filter_result = self.filters.check_update(update)
-                if filter_result:
-                    return text_list[1:], filter_result
-                return False
-        return None
+        pass
 
     def collect_additional_context(
         self,
@@ -179,7 +168,4 @@ class PrefixHandler(BaseHandler[Update, CCT, RT]):
         """Add text after the command to :attr:`CallbackContext.args` as list, split on single
         whitespaces and add output of data filters to :attr:`CallbackContext` as well.
         """
-        if isinstance(check_result, tuple):
-            context.args = check_result[0]
-            if isinstance(check_result[1], dict):
-                context.update(check_result[1])
+        pass

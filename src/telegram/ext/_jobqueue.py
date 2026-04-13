@@ -61,7 +61,7 @@ def _get_callback_name(callback: object) -> str:
     Returns:
         The name of the callback, using __name__ if available, otherwise the class name.
     """
-    return getattr(callback, "__name__", None) or callback.__class__.__name__
+    pass
 
 
 class JobQueue(Generic[CCT]):
@@ -140,12 +140,7 @@ class JobQueue(Generic[CCT]):
     @property
     def application(self) -> "Application[Any, CCT, Any, Any, Any, JobQueue[CCT]]":
         """The application this JobQueue is associated with."""
-        if self._application is None:
-            raise RuntimeError("No application was set for this JobQueue.")
-        application = self._application()
-        if application is not None:
-            return application
-        raise RuntimeError("The application instance is no longer alive.")
+        pass
 
     @property
     def scheduler_configuration(self) -> JSONDict:
@@ -171,21 +166,8 @@ class JobQueue(Generic[CCT]):
             dict[:obj:`str`, :obj:`object`]: The configuration values as dictionary.
 
         """
-        timezone: dtm.tzinfo = UTC
-        if (
-            self._application
-            and isinstance(self.application.bot, ExtBot)
-            and self.application.bot.defaults
-        ):
-            timezone = self.application.bot.defaults.tzinfo or UTC
+        pass
 
-        return {
-            "timezone": timezone,
-            "executors": {"default": self._executor},
-        }
-
-    def _tz_now(self) -> dtm.datetime:
-        return dtm.datetime.now(self.scheduler.timezone)
 
     @overload
     def _parse_time_input(self, time: None, shift_day: bool = False) -> None: ...
@@ -197,29 +179,6 @@ class JobQueue(Generic[CCT]):
         shift_day: bool = False,
     ) -> dtm.datetime: ...
 
-    def _parse_time_input(
-        self,
-        time: float | dtm.timedelta | dtm.datetime | dtm.time | None,
-        shift_day: bool = False,
-    ) -> dtm.datetime | None:
-        if time is None:
-            return None
-        if isinstance(time, int | float):
-            return self._tz_now() + dtm.timedelta(seconds=time)
-        if isinstance(time, dtm.timedelta):
-            return self._tz_now() + time
-        if isinstance(time, dtm.time):
-            date_time = dtm.datetime.combine(
-                dtm.datetime.now(tz=time.tzinfo or self.scheduler.timezone).date(), time
-            )
-            if date_time.tzinfo is None:
-                # dtm.combine uses the tzinfo of `time`, which might be None, so we still have
-                # to localize it
-                date_time = localize(date_time, self.scheduler.timezone)
-            if shift_day and date_time <= dtm.datetime.now(UTC):
-                date_time += dtm.timedelta(days=1)
-            return date_time
-        return time
 
     def set_application(
         self, application: "Application[Any, CCT, Any, Any, Any, JobQueue[CCT]]"
@@ -230,8 +189,7 @@ class JobQueue(Generic[CCT]):
             application (:class:`telegram.ext.Application`): The application.
 
         """
-        self._application = weakref.ref(application)
-        self.scheduler.configure(**self.scheduler_configuration)
+        pass
 
     @staticmethod
     async def job_callback(job_queue: "JobQueue[CCT]", job: "Job[CCT]") -> None:
@@ -255,7 +213,7 @@ class JobQueue(Generic[CCT]):
             job_queue (:class:`JobQueue`): The job queue that created the job.
             job (:class:`~telegram.ext.Job`): The job to run.
         """
-        await job.run(job_queue.application)
+        pass
 
     def run_once(
         self,
@@ -321,25 +279,7 @@ class JobQueue(Generic[CCT]):
             queue.
 
         """
-        if not job_kwargs:
-            job_kwargs = {}
-
-        name = name or _get_callback_name(callback)
-        job = Job(callback=callback, data=data, name=name, chat_id=chat_id, user_id=user_id)
-        date_time = self._parse_time_input(when, shift_day=True)
-
-        j = self.scheduler.add_job(
-            self.job_callback,
-            name=name,
-            trigger="date",
-            run_date=date_time,
-            args=(self, job),
-            timezone=date_time.tzinfo or self.scheduler.timezone,
-            **job_kwargs,
-        )
-
-        job._job = j  # pylint: disable=protected-access
-        return job
+        pass
 
     def run_repeating(
         self,
@@ -439,34 +379,7 @@ class JobQueue(Generic[CCT]):
             queue.
 
         """
-        if not job_kwargs:
-            job_kwargs = {}
-
-        name = name or _get_callback_name(callback)
-        job = Job(callback=callback, data=data, name=name, chat_id=chat_id, user_id=user_id)
-
-        dt_first = self._parse_time_input(first)
-        dt_last = self._parse_time_input(last)
-
-        if dt_last and dt_first and dt_last < dt_first:
-            raise ValueError("'last' must not be before 'first'!")
-
-        if isinstance(interval, dtm.timedelta):
-            interval = interval.total_seconds()
-
-        j = self.scheduler.add_job(
-            self.job_callback,
-            trigger="interval",
-            args=(self, job),
-            start_date=dt_first,
-            end_date=dt_last,
-            seconds=interval,
-            name=name,
-            **job_kwargs,
-        )
-
-        job._job = j  # pylint: disable=protected-access
-        return job
+        pass
 
     def run_monthly(
         self,
@@ -525,26 +438,7 @@ class JobQueue(Generic[CCT]):
             queue.
 
         """
-        if not job_kwargs:
-            job_kwargs = {}
-
-        name = name or _get_callback_name(callback)
-        job = Job(callback=callback, data=data, name=name, chat_id=chat_id, user_id=user_id)
-
-        j = self.scheduler.add_job(
-            self.job_callback,
-            trigger="cron",
-            args=(self, job),
-            name=name,
-            day="last" if day == -1 else day,
-            hour=when.hour,
-            minute=when.minute,
-            second=when.second,
-            timezone=when.tzinfo or self.scheduler.timezone,
-            **job_kwargs,
-        )
-        job._job = j  # pylint: disable=protected-access
-        return job
+        pass
 
     def run_daily(
         self,
@@ -608,27 +502,7 @@ class JobQueue(Generic[CCT]):
             queue.
 
         """
-        if not job_kwargs:
-            job_kwargs = {}
-
-        name = name or _get_callback_name(callback)
-        job = Job(callback=callback, data=data, name=name, chat_id=chat_id, user_id=user_id)
-
-        j = self.scheduler.add_job(
-            self.job_callback,
-            name=name,
-            args=(self, job),
-            trigger="cron",
-            day_of_week=",".join([self._CRON_MAPPING[d] for d in days]),
-            hour=time.hour,
-            minute=time.minute,
-            second=time.second,
-            timezone=time.tzinfo or self.scheduler.timezone,
-            **job_kwargs,
-        )
-
-        job._job = j  # pylint: disable=protected-access
-        return job
+        pass
 
     def run_custom(
         self,
@@ -674,19 +548,12 @@ class JobQueue(Generic[CCT]):
             queue.
 
         """
-        name = name or _get_callback_name(callback)
-        job = Job(callback=callback, data=data, name=name, chat_id=chat_id, user_id=user_id)
-
-        j = self.scheduler.add_job(self.job_callback, args=(self, job), name=name, **job_kwargs)
-
-        job._job = j  # pylint: disable=protected-access
-        return job
+        pass
 
     async def start(self) -> None:
         # this method async just in case future versions need that
         """Starts the :class:`~telegram.ext.JobQueue`."""
-        if not self.scheduler.running:
-            self.scheduler.start()
+        pass
 
     async def stop(self, wait: bool = True) -> None:
         """Shuts down the :class:`~telegram.ext.JobQueue`.
@@ -727,14 +594,7 @@ class JobQueue(Generic[CCT]):
         Returns:
             tuple[:class:`Job`]: Tuple of all *scheduled* jobs.
         """
-        jobs_generator: Iterable[Job] = (
-            Job.from_aps_job(job) for job in self.scheduler.get_jobs()
-        )
-        if pattern is None:
-            return tuple(jobs_generator)
-        return tuple(
-            job for job in jobs_generator if (job.name and re.compile(pattern).search(job.name))
-        )
+        pass
 
     def get_jobs_by_name(self, name: str) -> tuple["Job[CCT]", ...]:
         """Returns a tuple of all *scheduled* jobs with the given name that are currently
@@ -747,7 +607,7 @@ class JobQueue(Generic[CCT]):
         Returns:
             tuple[:class:`Job`]: Tuple of all *scheduled* jobs matching the name.
         """
-        return self.jobs(f"^{re.escape(name)}$")
+        pass
 
 
 class Job(Generic[CCT]):
@@ -922,25 +782,18 @@ class Job(Generic[CCT]):
         .. versionchanged:: 20.0
             This property is now read-only.
         """
-        return self._job
+        pass
 
     @property
     def removed(self) -> bool:
         """:obj:`bool`: Whether this job is due to be removed."""
-        return self._removed
+        pass
 
     @property
     def enabled(self) -> bool:
         """:obj:`bool`: Whether this job is enabled."""
-        return self._enabled
+        pass
 
-    @enabled.setter
-    def enabled(self, status: bool) -> None:
-        if status:
-            self.job.resume()
-        else:
-            self.job.pause()
-        self._enabled = status
 
     @property
     def next_t(self) -> dtm.datetime | None:
@@ -953,7 +806,7 @@ class Job(Generic[CCT]):
             This attribute is only available, if the :class:`telegram.ext.JobQueue` this job
             belongs to is already started. Otherwise APScheduler raises an :exc:`AttributeError`.
         """
-        return self.job.next_run_time
+        pass
 
     @classmethod
     def from_aps_job(cls, aps_job: "APSJob") -> "Job[CCT]":
@@ -972,9 +825,7 @@ class Job(Generic[CCT]):
         Returns:
             :class:`telegram.ext.Job`
         """
-        ext_job = aps_job.args[1]
-        ext_job._job = aps_job  # pylint: disable=protected-access
-        return ext_job
+        pass
 
     async def run(
         self, application: "Application[Any, CCT, Any, Any, Any, JobQueue[CCT]]"
@@ -1022,5 +873,4 @@ class Job(Generic[CCT]):
         Schedules this job for removal from the :class:`JobQueue`. It will be removed without
         executing its callback function again.
         """
-        self.job.remove()
-        self._removed = True
+        pass

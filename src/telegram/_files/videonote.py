@@ -99,8 +99,3 @@ class VideoNote(_BaseThumbedMedium):
             self.length: int = length
             self._duration: dtm.timedelta = to_timedelta(duration)
 
-    @property
-    def duration(self) -> int | dtm.timedelta:
-        return get_timedelta_value(  # type: ignore[return-value]
-            self._duration, attribute="duration"
-        )

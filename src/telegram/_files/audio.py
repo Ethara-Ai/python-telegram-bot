@@ -114,8 +114,3 @@ class Audio(_BaseThumbedMedium):
             self.mime_type: str | None = mime_type
             self.file_name: str | None = file_name
 
-    @property
-    def duration(self) -> int | dtm.timedelta:
-        return get_timedelta_value(  # type: ignore[return-value]
-            self._duration, attribute="duration"
-        )

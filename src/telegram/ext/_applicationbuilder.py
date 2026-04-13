@@ -223,72 +223,12 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         self._rate_limiter: ODVInput[BaseRateLimiter] = DEFAULT_NONE
         self._http_version: DVInput[str] = DefaultValue("1.1")
 
-    def _build_request(self, get_updates: bool) -> BaseRequest:
-        prefix = "_get_updates_" if get_updates else "_"
-        if not isinstance(getattr(self, f"{prefix}request"), DefaultValue):
-            return getattr(self, f"{prefix}request")
 
-        proxy = DefaultValue.get_value(getattr(self, f"{prefix}proxy"))
-        socket_options = DefaultValue.get_value(getattr(self, f"{prefix}socket_options"))
-        if get_updates:
-            connection_pool_size = (
-                DefaultValue.get_value(getattr(self, f"{prefix}connection_pool_size")) or 1
-            )
-        else:
-            connection_pool_size = (
-                DefaultValue.get_value(getattr(self, f"{prefix}connection_pool_size")) or 256
-            )
-
-        timeouts = {
-            "connect_timeout": getattr(self, f"{prefix}connect_timeout"),
-            "read_timeout": getattr(self, f"{prefix}read_timeout"),
-            "write_timeout": getattr(self, f"{prefix}write_timeout"),
-            "pool_timeout": getattr(self, f"{prefix}pool_timeout"),
-        }
-
-        if not get_updates:
-            timeouts["media_write_timeout"] = self._media_write_timeout
-
-        # Get timeouts that were actually set-
-        effective_timeouts = {
-            key: value for key, value in timeouts.items() if not isinstance(value, DefaultValue)
-        }
-
-        http_version = DefaultValue.get_value(getattr(self, f"{prefix}http_version")) or "1.1"
-
-        return HTTPXRequest(
-            connection_pool_size=connection_pool_size,
-            proxy=proxy,
-            http_version=http_version,  # type: ignore[arg-type]
-            socket_options=socket_options,
-            **effective_timeouts,
-        )
-
-    def _build_ext_bot(self) -> ExtBot:
-        if isinstance(self._token, DefaultValue):
-            raise RuntimeError("No bot token was set.")
-
-        return ExtBot(
-            token=self._token,
-            base_url=DefaultValue.get_value(self._base_url),
-            base_file_url=DefaultValue.get_value(self._base_file_url),
-            private_key=DefaultValue.get_value(self._private_key),
-            private_key_password=DefaultValue.get_value(self._private_key_password),
-            defaults=DefaultValue.get_value(self._defaults),
-            arbitrary_callback_data=DefaultValue.get_value(self._arbitrary_callback_data),
-            request=self._build_request(get_updates=False),
-            get_updates_request=self._build_request(get_updates=True),
-            rate_limiter=DefaultValue.get_value(self._rate_limiter),
-            local_mode=DefaultValue.get_value(self._local_mode),
-        )
 
     def _bot_check(self, name: str) -> None:
         if self._bot is not DEFAULT_NONE:
             raise RuntimeError(_TWO_ARGS_REQ.format(name, "bot instance"))
 
-    def _updater_check(self, name: str) -> None:
-        if self._updater not in (DEFAULT_NONE, None):
-            raise RuntimeError(_TWO_ARGS_REQ.format(name, "updater"))
 
     def build(
         self: "ApplicationBuilder[BT, CCT, UD, CD, BD, JQ]",
@@ -301,51 +241,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`telegram.ext.Application`
         """
-        job_queue = DefaultValue.get_value(self._job_queue)
-        persistence = DefaultValue.get_value(self._persistence)
-        # If user didn't set updater
-        if isinstance(self._updater, DefaultValue) or self._updater is None:
-            if isinstance(self._bot, DefaultValue):  # and didn't set a bot
-                bot: Bot = self._build_ext_bot()  # build a bot
-            else:
-                bot = self._bot
-            # now also build an updater/update_queue for them
-            update_queue = DefaultValue.get_value(self._update_queue)
-
-            if self._updater is None:
-                updater = None
-            else:
-                updater = Updater(bot=bot, update_queue=update_queue)
-        else:  # if they set an updater, get all necessary attributes for Application from Updater:
-            updater = self._updater
-            bot = self._updater.bot
-            update_queue = self._updater.update_queue
-
-        application: Application[BT, CCT, UD, CD, BD, JQ] = DefaultValue.get_value(
-            self._application_class
-        )(
-            bot=bot,
-            update_queue=update_queue,
-            updater=updater,
-            update_processor=self._update_processor,
-            job_queue=job_queue,
-            persistence=persistence,
-            context_types=DefaultValue.get_value(self._context_types),
-            post_init=self._post_init,
-            post_shutdown=self._post_shutdown,
-            post_stop=self._post_stop,
-            **self._application_kwargs,  # For custom Application subclasses
-        )
-
-        if job_queue is not None:
-            job_queue.set_application(application)  # type: ignore[arg-type]
-
-        if persistence is not None:
-            # This raises an exception if persistence.store_data.callback_data is True
-            # but self.bot is not an instance of ExtBot - so no need to check that later on
-            persistence.set_bot(bot)
-
-        return application
+        pass
 
     def application_class(
         self: BuilderType,
@@ -370,9 +266,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._application_class = application_class
-        self._application_kwargs = kwargs or {}
-        return self
+        pass
 
     def token(self: BuilderType, token: str) -> BuilderType:
         """Sets the token for :attr:`telegram.ext.Application.bot`.
@@ -383,10 +277,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._bot_check("token")
-        self._updater_check("token")
-        self._token = token
-        return self
+        pass
 
     def base_url(self: BuilderType, base_url: BaseUrl) -> BuilderType:
         """Sets the base URL for :attr:`telegram.ext.Application.bot`. If not called,
@@ -405,10 +296,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._bot_check("base_url")
-        self._updater_check("base_url")
-        self._base_url = base_url
-        return self
+        pass
 
     def base_file_url(self: BuilderType, base_file_url: BaseUrl) -> BuilderType:
         """Sets the base file URL for :attr:`telegram.ext.Application.bot`. If not
@@ -427,10 +315,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._bot_check("base_file_url")
-        self._updater_check("base_file_url")
-        self._base_file_url = base_file_url
-        return self
+        pass
 
     def _request_check(self, get_updates: bool) -> None:
         prefix = "get_updates_" if get_updates else ""
@@ -463,25 +348,6 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         if self._updater not in (DEFAULT_NONE, None):
             raise RuntimeError(_TWO_ARGS_REQ.format(name, "updater instance"))
 
-    def _request_param_check(self, name: str, get_updates: bool) -> None:
-        if get_updates and self._get_updates_request is not DEFAULT_NONE:
-            raise RuntimeError(  # disallow request args for get_updates if Request for that is set
-                _TWO_ARGS_REQ.format(f"get_updates_{name}", "get_updates_request instance")
-            )
-        if self._request is not DEFAULT_NONE:  # disallow request args if request is set
-            raise RuntimeError(_TWO_ARGS_REQ.format(name, "request instance"))
-
-        if self._bot is not DEFAULT_NONE:  # disallow request args if bot is set (has Request)
-            raise RuntimeError(
-                _TWO_ARGS_REQ.format(
-                    f"get_updates_{name}" if get_updates else name, "bot instance"
-                )
-            )
-
-        if self._updater not in (DEFAULT_NONE, None):  # disallow request args for updater(has bot)
-            raise RuntimeError(
-                _TWO_ARGS_REQ.format(f"get_updates_{name}" if get_updates else name, "updater")
-            )
 
     def request(self: BuilderType, request: BaseRequest) -> BuilderType:
         """Sets a :class:`telegram.request.BaseRequest` instance for the
@@ -514,9 +380,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="connection_pool_size", get_updates=False)
-        self._connection_pool_size = connection_pool_size
-        return self
+        pass
 
     def proxy(self: BuilderType, proxy: str | httpx.Proxy | httpx.URL) -> BuilderType:
         """Sets the proxy for the :paramref:`~telegram.request.HTTPXRequest.proxy`
@@ -534,9 +398,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="proxy", get_updates=False)
-        self._proxy = proxy
-        return self
+        pass
 
     def socket_options(self: BuilderType, socket_options: Collection[SocketOpt]) -> BuilderType:
         """Sets the options for the :paramref:`~telegram.request.HTTPXRequest.socket_options`
@@ -553,9 +415,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="socket_options", get_updates=False)
-        self._socket_options = socket_options
-        return self
+        pass
 
     def connect_timeout(self: BuilderType, connect_timeout: float | None) -> BuilderType:
         """Sets the connection attempt timeout for the
@@ -571,9 +431,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="connect_timeout", get_updates=False)
-        self._connect_timeout = connect_timeout
-        return self
+        pass
 
     def read_timeout(self: BuilderType, read_timeout: float | None) -> BuilderType:
         """Sets the waiting timeout for the
@@ -589,9 +447,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="read_timeout", get_updates=False)
-        self._read_timeout = read_timeout
-        return self
+        pass
 
     def write_timeout(self: BuilderType, write_timeout: float | None) -> BuilderType:
         """Sets the write operation timeout for the
@@ -607,9 +463,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="write_timeout", get_updates=False)
-        self._write_timeout = write_timeout
-        return self
+        pass
 
     def media_write_timeout(self: BuilderType, media_write_timeout: float | None) -> BuilderType:
         """Sets the media write operation timeout for the
@@ -625,9 +479,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="media_write_timeout", get_updates=False)
-        self._media_write_timeout = media_write_timeout
-        return self
+        pass
 
     def pool_timeout(self: BuilderType, pool_timeout: float | None) -> BuilderType:
         """Sets the connection pool's connection freeing timeout for the
@@ -645,9 +497,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="pool_timeout", get_updates=False)
-        self._pool_timeout = pool_timeout
-        return self
+        pass
 
     def http_version(self: BuilderType, http_version: HTTPVersion) -> BuilderType:
         """Sets the HTTP protocol version which is used for the
@@ -686,9 +536,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="http_version", get_updates=False)
-        self._http_version = http_version
-        return self
+        pass
 
     def get_updates_request(self: BuilderType, get_updates_request: BaseRequest) -> BuilderType:
         """Sets a :class:`telegram.request.BaseRequest` instance for the
@@ -703,9 +551,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_check(get_updates=True)
-        self._get_updates_request = get_updates_request
-        return self
+        pass
 
     def get_updates_connection_pool_size(
         self: BuilderType, get_updates_connection_pool_size: int
@@ -722,9 +568,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="connection_pool_size", get_updates=True)
-        self._get_updates_connection_pool_size = get_updates_connection_pool_size
-        return self
+        pass
 
     def get_updates_proxy(
         self: BuilderType, get_updates_proxy: str | httpx.Proxy | httpx.URL
@@ -744,9 +588,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="proxy", get_updates=True)
-        self._get_updates_proxy = get_updates_proxy
-        return self
+        pass
 
     def get_updates_socket_options(
         self: BuilderType, get_updates_socket_options: Collection[SocketOpt]
@@ -765,9 +607,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="socket_options", get_updates=True)
-        self._get_updates_socket_options = get_updates_socket_options
-        return self
+        pass
 
     def get_updates_connect_timeout(
         self: BuilderType, get_updates_connect_timeout: float | None
@@ -785,9 +625,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="connect_timeout", get_updates=True)
-        self._get_updates_connect_timeout = get_updates_connect_timeout
-        return self
+        pass
 
     def get_updates_read_timeout(
         self: BuilderType, get_updates_read_timeout: float | None
@@ -805,9 +643,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="read_timeout", get_updates=True)
-        self._get_updates_read_timeout = get_updates_read_timeout
-        return self
+        pass
 
     def get_updates_write_timeout(
         self: BuilderType, get_updates_write_timeout: float | None
@@ -825,9 +661,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="write_timeout", get_updates=True)
-        self._get_updates_write_timeout = get_updates_write_timeout
-        return self
+        pass
 
     def get_updates_pool_timeout(
         self: BuilderType, get_updates_pool_timeout: float | None
@@ -845,9 +679,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="pool_timeout", get_updates=True)
-        self._get_updates_pool_timeout = get_updates_pool_timeout
-        return self
+        pass
 
     def get_updates_http_version(
         self: BuilderType, get_updates_http_version: HTTPVersion
@@ -887,9 +719,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._request_param_check(name="http_version", get_updates=True)
-        self._get_updates_http_version = get_updates_http_version
-        return self
+        pass
 
     def private_key(
         self: BuilderType,
@@ -915,18 +745,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._bot_check("private_key")
-        self._updater_check("private_key")
-
-        self._private_key = (
-            private_key if isinstance(private_key, bytes) else Path(private_key).read_bytes()
-        )
-        if password is None or isinstance(password, bytes):
-            self._private_key_password = password
-        else:
-            self._private_key_password = Path(password).read_bytes()
-
-        return self
+        pass
 
     def defaults(self: BuilderType, defaults: "Defaults") -> BuilderType:
         """Sets the :class:`telegram.ext.Defaults` instance for
@@ -940,10 +759,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._bot_check("defaults")
-        self._updater_check("defaults")
-        self._defaults = defaults
-        return self
+        pass
 
     def arbitrary_callback_data(
         self: BuilderType, arbitrary_callback_data: bool | int
@@ -974,10 +790,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._bot_check("arbitrary_callback_data")
-        self._updater_check("arbitrary_callback_data")
-        self._arbitrary_callback_data = arbitrary_callback_data
-        return self
+        pass
 
     def local_mode(self: BuilderType, local_mode: bool) -> BuilderType:
         """Specifies the value for :paramref:`~telegram.Bot.local_mode` for the
@@ -992,10 +805,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._bot_check("local_mode")
-        self._updater_check("local_mode")
-        self._local_mode = local_mode
-        return self
+        pass
 
     def bot(
         self: "ApplicationBuilder[BT, CCT, UD, CD, BD, JQ]",
@@ -1011,12 +821,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._updater_check("bot")
-        for attr, error in _BOT_CHECKS:
-            if not isinstance(getattr(self, f"_{attr}"), DefaultValue):
-                raise RuntimeError(_TWO_ARGS_REQ.format("bot", error))
-        self._bot = bot
-        return self  # type: ignore[return-value]
+        pass
 
     def update_queue(self: BuilderType, update_queue: "Queue[object]") -> BuilderType:
         """Sets a :class:`asyncio.Queue` instance for
@@ -1032,10 +837,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        if self._updater not in (DEFAULT_NONE, None):
-            raise RuntimeError(_TWO_ARGS_REQ.format("update_queue", "updater instance"))
-        self._update_queue = update_queue
-        return self
+        pass
 
     def concurrent_updates(
         self: BuilderType, concurrent_updates: "bool | int | BaseUpdateProcessor"
@@ -1067,22 +869,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        # Check if concurrent updates is bool and convert to integer
-        if concurrent_updates is True:
-            concurrent_updates = 256
-        elif concurrent_updates is False:
-            concurrent_updates = 1
-
-        # If `concurrent_updates` is an integer, create a `SimpleUpdateProcessor`
-        # instance with that integer value; otherwise, raise an error if the value
-        # is negative
-        if isinstance(concurrent_updates, int):
-            concurrent_updates = SimpleUpdateProcessor(concurrent_updates)
-
-        # Assign default value of concurrent_updates if it is instance of
-        # `BaseUpdateProcessor`
-        self._update_processor: BaseUpdateProcessor = concurrent_updates  # type: ignore[no-redef]
-        return self
+        pass
 
     def job_queue(
         self: "ApplicationBuilder[BT, CCT, UD, CD, BD, JQ]",
@@ -1114,8 +901,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._job_queue = job_queue
-        return self  # type: ignore[return-value]
+        pass
 
     def persistence(
         self: BuilderType, persistence: "BasePersistence[Any, Any, Any]"
@@ -1147,8 +933,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._persistence = persistence
-        return self
+        pass
 
     def context_types(
         self: "ApplicationBuilder[BT, CCT, UD, CD, BD, JQ]",
@@ -1166,8 +951,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._context_types = context_types
-        return self  # type: ignore[return-value]
+        pass
 
     def updater(self: BuilderType, updater: Updater | None) -> BuilderType:
         """Sets a :class:`telegram.ext.Updater` instance for
@@ -1183,23 +967,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        if updater is None:
-            self._updater = updater
-            return self
-
-        for attr, error in (
-            (self._bot, "bot instance"),
-            (self._update_queue, "update_queue"),
-        ):
-            if not isinstance(attr, DefaultValue):
-                raise RuntimeError(_TWO_ARGS_REQ.format("updater", error))
-
-        for attr_name, error in _BOT_CHECKS:
-            if not isinstance(getattr(self, f"_{attr_name}"), DefaultValue):
-                raise RuntimeError(_TWO_ARGS_REQ.format("updater", error))
-
-        self._updater = updater
-        return self
+        pass
 
     def post_init(
         self: BuilderType, post_init: Callable[[Application], Coroutine[Any, Any, None]]
@@ -1237,8 +1005,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._post_init = post_init
-        return self
+        pass
 
     def post_shutdown(
         self: BuilderType, post_shutdown: Callable[[Application], Coroutine[Any, Any, None]]
@@ -1278,8 +1045,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._post_shutdown = post_shutdown
-        return self
+        pass
 
     def post_stop(
         self: BuilderType, post_stop: Callable[[Application], Coroutine[Any, Any, None]]
@@ -1327,8 +1093,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._post_stop = post_stop
-        return self
+        pass
 
     def rate_limiter(
         self: "ApplicationBuilder[BT, CCT, UD, CD, BD, JQ]",
@@ -1344,10 +1109,7 @@ class ApplicationBuilder(Generic[BT, CCT, UD, CD, BD, JQ]):
         Returns:
             :class:`ApplicationBuilder`: The same builder with the updated argument.
         """
-        self._bot_check("rate_limiter")
-        self._updater_check("rate_limiter")
-        self._rate_limiter = rate_limiter
-        return self  # type: ignore[return-value]
+        pass
 
 
 InitApplicationBuilder = (  # This is defined all the way down here so that its type is inferred

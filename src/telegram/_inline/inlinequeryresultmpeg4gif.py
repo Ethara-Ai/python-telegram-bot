@@ -186,6 +186,3 @@ class InlineQueryResultMpeg4Gif(InlineQueryResult):
             self.thumbnail_mime_type: str | None = thumbnail_mime_type
             self.show_caption_above_media: bool | None = show_caption_above_media
 
-    @property
-    def mpeg4_duration(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._mpeg4_duration, attribute="mpeg4_duration")

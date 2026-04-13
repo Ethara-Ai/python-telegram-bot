@@ -96,9 +96,7 @@ class MessageHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        if isinstance(update, Update):
-            return self.filters.check_update(update) or False
-        return None
+        pass
 
     def collect_additional_context(
         self,
@@ -108,5 +106,4 @@ class MessageHandler(BaseHandler[Update, CCT, RT]):
         check_result: bool | dict[str, object] | None,
     ) -> None:
         """Adds possible output of data filters to the :class:`CallbackContext`."""
-        if isinstance(check_result, dict):
-            context.update(check_result)
+        pass

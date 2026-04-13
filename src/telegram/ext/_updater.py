@@ -165,9 +165,6 @@ class Updater(contextlib.AbstractAsyncContextManager["Updater"]):
         """
         return build_repr_with_selected_attrs(self, bot=self.bot)
 
-    @property
-    def running(self) -> bool:
-        return self._running
 
     async def initialize(self) -> None:
         """Initializes the Updater & the associated :attr:`bot` by calling
@@ -176,12 +173,7 @@ class Updater(contextlib.AbstractAsyncContextManager["Updater"]):
         .. seealso::
             :meth:`shutdown`
         """
-        if self._initialized:
-            _LOGGER.debug("This Updater is already initialized.")
-            return
-
-        await self.bot.initialize()
-        self._initialized = True
+        pass
 
     async def shutdown(self) -> None:
         """
@@ -271,150 +263,8 @@ class Updater(contextlib.AbstractAsyncContextManager["Updater"]):
             :exc:`RuntimeError`: If the updater is already running or was not initialized.
 
         """
-        # We refrain from issuing deprecation warnings for the timeout parameters here, as we
-        # already issue them in `Application`. This means that there are no warnings when using
-        # `Updater` without `Application`, but this is a rather special use case.
+        pass
 
-        if error_callback and asyncio.iscoroutinefunction(error_callback):
-            raise TypeError(
-                "The `error_callback` must not be a coroutine function! Use an ordinary function "
-                "instead. "
-            )
-
-        async with self.__lock:
-            if self.running:
-                raise RuntimeError("This Updater is already running!")
-            if not self._initialized:
-                raise RuntimeError("This Updater was not initialized via `Updater.initialize`!")
-
-            self._running = True
-
-            try:
-                # Create & start tasks
-                polling_ready = asyncio.Event()
-
-                await self._start_polling(
-                    poll_interval=poll_interval,
-                    timeout=timeout,
-                    bootstrap_retries=bootstrap_retries,
-                    drop_pending_updates=drop_pending_updates,
-                    allowed_updates=allowed_updates,
-                    ready=polling_ready,
-                    error_callback=error_callback,
-                )
-
-                _LOGGER.debug("Waiting for polling to start")
-                await polling_ready.wait()
-                _LOGGER.debug("Polling updates from Telegram started")
-            except Exception:
-                self._running = False
-                raise
-            return self.update_queue
-
-    async def _start_polling(
-        self,
-        poll_interval: float,
-        timeout: TimePeriod,
-        bootstrap_retries: int,
-        drop_pending_updates: bool | None,
-        allowed_updates: Sequence[str] | None,
-        ready: asyncio.Event,
-        error_callback: Callable[[TelegramError], None] | None,
-    ) -> None:
-        _LOGGER.debug("Updater started (polling)")
-
-        # the bootstrapping phase does two things:
-        # 1) make sure there is no webhook set
-        # 2) apply drop_pending_updates
-        await self._bootstrap(
-            bootstrap_retries,
-            drop_pending_updates=drop_pending_updates,
-            webhook_url="",
-            allowed_updates=None,
-        )
-
-        _LOGGER.debug("Bootstrap done")
-
-        async def polling_action_cb() -> None:
-            try:
-                updates = await self.bot.get_updates(
-                    offset=self._last_update_id,
-                    timeout=timeout,
-                    allowed_updates=allowed_updates,
-                )
-            except TelegramError:
-                # TelegramErrors should be processed by the network retry loop
-                raise
-            except Exception as exc:
-                # Other exceptions should not. Let's log them for now.
-                _LOGGER.critical(
-                    "Something went wrong processing the data received from Telegram. "
-                    "Received data was *not* processed!",
-                    exc_info=exc,
-                )
-                return
-
-            if updates:
-                if not self.running:
-                    _LOGGER.critical(
-                        "Updater stopped unexpectedly. Pulled updates will be ignored and pulled "
-                        "again on restart."
-                    )
-                else:
-                    for update in updates:
-                        await self.update_queue.put(update)
-                    self._last_update_id = updates[-1].update_id + 1  # Add one to 'confirm' it
-
-            return
-
-        def default_error_callback(exc: TelegramError) -> None:
-            _LOGGER.exception("Exception happened while polling for updates.", exc_info=exc)
-
-        # Start task that runs in background, pulls
-        # updates from Telegram and inserts them in the update queue of the
-        # Application.
-        self.__polling_task = asyncio.create_task(
-            network_retry_loop(
-                is_running=lambda: self.running,
-                action_cb=polling_action_cb,
-                on_err_cb=error_callback or default_error_callback,
-                description="Polling Updates",
-                interval=poll_interval,
-                stop_event=self.__polling_task_stop_event,
-                max_retries=-1,
-                repeat_on_success=True,
-            ),
-            name="Updater:start_polling:polling_task",
-        )
-
-        # Prepare a cleanup callback to await on _stop_polling
-        # Calling get_updates one more time with the latest `offset` parameter ensures that
-        # all updates that where put into the update queue are also marked as "read" to TG,
-        # so we do not receive them again on the next startup
-        # We define this here so that we can use the same parameters as in the polling task
-        async def _get_updates_cleanup() -> None:
-            _LOGGER.debug(
-                "Calling `get_updates` one more time to mark all fetched updates as read."
-            )
-            try:
-                await self.bot.get_updates(
-                    offset=self._last_update_id,
-                    # We don't want to do long polling here!
-                    timeout=dtm.timedelta(seconds=0),
-                    allowed_updates=allowed_updates,
-                )
-            except TelegramError:
-                _LOGGER.exception(
-                    "Error while calling `get_updates` one more time to mark all fetched updates. "
-                    "Suppressing error to ensure graceful shutdown. When polling for "
-                    "updates is restarted, updates may be fetched again. Please adjust timeouts "
-                    "via `ApplicationBuilder` or the parameter `get_updates_request` of `Bot`.",
-                )
-
-        self.__polling_cleanup_cb = _get_updates_cleanup
-
-        if ready is not None:
-            ready.set()
 
     async def start_webhook(
         self,
@@ -529,138 +379,9 @@ class Updater(contextlib.AbstractAsyncContextManager["Updater"]):
         Raises:
             :exc:`RuntimeError`: If the updater is already running or was not initialized.
         """
-        if not WEBHOOKS_AVAILABLE:
-            raise RuntimeError(
-                "To use `start_webhook`, PTB must be installed via `pip install "
-                '"python-telegram-bot[webhooks]"`.'
-            )
-        # unix has special requirements what must and mustn't be set when using it
-        if unix:
-            error_msg = (
-                "You can not pass unix and {0}, only use one. Unix if you want to "
-                "initialize a unix socket, or {0} for a standard TCP server."
-            )
-            if not isinstance(listen, DefaultValue):
-                raise RuntimeError(error_msg.format("listen"))
-            if not isinstance(port, DefaultValue):
-                raise RuntimeError(error_msg.format("port"))
-            if not webhook_url:
-                raise RuntimeError(
-                    "Since you set unix, you also need to set the URL to the webhook "
-                    "of the proxy you run in front of the unix socket."
-                )
+        pass
 
-        async with self.__lock:
-            if self.running:
-                raise RuntimeError("This Updater is already running!")
-            if not self._initialized:
-                raise RuntimeError("This Updater was not initialized via `Updater.initialize`!")
 
-            self._running = True
-
-            try:
-                # Create & start tasks
-                webhook_ready = asyncio.Event()
-
-                await self._start_webhook(
-                    listen=DefaultValue.get_value(listen),
-                    port=DefaultValue.get_value(port),
-                    url_path=url_path,
-                    cert=cert,
-                    key=key,
-                    bootstrap_retries=bootstrap_retries,
-                    drop_pending_updates=drop_pending_updates,
-                    webhook_url=webhook_url,
-                    allowed_updates=allowed_updates,
-                    ready=webhook_ready,
-                    ip_address=ip_address,
-                    max_connections=max_connections,
-                    secret_token=secret_token,
-                    unix=unix,
-                )
-
-                _LOGGER.debug("Waiting for webhook server to start")
-                await webhook_ready.wait()
-                _LOGGER.debug("Webhook server started")
-            except Exception:
-                self._running = False
-                raise
-
-            # Return the update queue so the main thread can insert updates
-            return self.update_queue
-
-    async def _start_webhook(
-        self,
-        listen: str,
-        port: int,
-        url_path: str,
-        bootstrap_retries: int,
-        allowed_updates: Sequence[str] | None,
-        cert: str | Path | None = None,
-        key: str | Path | None = None,
-        drop_pending_updates: bool | None = None,
-        webhook_url: str | None = None,
-        ready: asyncio.Event | None = None,
-        ip_address: str | None = None,
-        max_connections: int = 40,
-        secret_token: str | None = None,
-        unix: "str | Path | socket | None" = None,
-    ) -> None:
-        _LOGGER.debug("Updater thread started (webhook)")
-
-        if not url_path.startswith("/"):
-            url_path = f"/{url_path}"
-
-        # Create Tornado app instance
-        app = WebhookAppClass(url_path, self.bot, self.update_queue, secret_token)
-
-        # Form SSL Context
-        # An SSLError is raised if the private key does not match with the certificate
-        # Note that we only use the SSL certificate for the WebhookServer, if the key is also
-        # present. This is because the WebhookServer may not actually be in charge of performing
-        # the SSL handshake, e.g. in case a reverse proxy is used
-        if cert is not None and key is not None:
-            try:
-                ssl_ctx: ssl.SSLContext | None = ssl.create_default_context(
-                    ssl.Purpose.CLIENT_AUTH
-                )
-                ssl_ctx.load_cert_chain(cert, key)  # type: ignore[union-attr]
-            except ssl.SSLError as exc:
-                raise TelegramError("Invalid SSL Certificate") from exc
-        else:
-            ssl_ctx = None
-        # Create and start server
-        self._httpd = WebhookServer(listen, port, app, ssl_ctx, unix)
-
-        if not webhook_url:
-            webhook_url = self._gen_webhook_url(
-                protocol="https" if ssl_ctx else "http",
-                listen=DefaultValue.get_value(listen),
-                port=port,
-                url_path=url_path,
-            )
-
-        # We pass along the cert to the webhook if present.
-        await self._bootstrap(
-            # Passing a Path or string only works if the bot is running against a local bot API
-            # server, so let's read the contents
-            cert=Path(cert).read_bytes() if cert else None,
-            max_retries=bootstrap_retries,
-            drop_pending_updates=drop_pending_updates,
-            webhook_url=webhook_url,
-            allowed_updates=allowed_updates,
-            ip_address=ip_address,
-            max_connections=max_connections,
-            secret_token=secret_token,
-        )
-
-        await self._httpd.serve_forever(ready=ready)
-
-    @staticmethod
-    def _gen_webhook_url(protocol: str, listen: str, port: int, url_path: str) -> str:
-        # TODO: double check if this should be https in any case - the docs of start_webhook
-        # say differently!
-        return f"{protocol}://{listen}:{port}{url_path}"
 
     async def _bootstrap(
         self,
@@ -678,50 +399,7 @@ class Updater(contextlib.AbstractAsyncContextManager["Updater"]):
         updates if appropriate. If there are unsuccessful attempts, this will retry as specified by
         :paramref:`max_retries`.
         """
-
-        async def bootstrap_del_webhook() -> None:
-            _LOGGER.debug("Deleting webhook")
-            if drop_pending_updates:
-                _LOGGER.debug("Dropping pending updates from Telegram server")
-            await self.bot.delete_webhook(drop_pending_updates=drop_pending_updates)
-
-        async def bootstrap_set_webhook() -> None:
-            _LOGGER.debug("Setting webhook")
-            if drop_pending_updates:
-                _LOGGER.debug("Dropping pending updates from Telegram server")
-            await self.bot.set_webhook(
-                url=webhook_url,  # type: ignore[arg-type]
-                certificate=cert,
-                allowed_updates=allowed_updates,
-                ip_address=ip_address,
-                drop_pending_updates=drop_pending_updates,
-                max_connections=max_connections,
-                secret_token=secret_token,
-            )
-
-        # Dropping pending updates from TG can be efficiently done with the drop_pending_updates
-        # parameter of delete/start_webhook, even in the case of polling. Also, we want to make
-        # sure that no webhook is configured in case of polling, so we just always call
-        # delete_webhook for polling
-        if drop_pending_updates or not webhook_url:
-            await network_retry_loop(
-                action_cb=bootstrap_del_webhook,
-                description="Bootstrap delete Webhook",
-                interval=bootstrap_interval,
-                stop_event=None,
-                max_retries=max_retries,
-            )
-
-        # Restore/set webhook settings, if needed. Again, we don't know ahead if a webhook is set,
-        # so we set it anyhow.
-        if webhook_url:
-            await network_retry_loop(
-                action_cb=bootstrap_set_webhook,
-                description="Bootstrap Set Webhook",
-                interval=bootstrap_interval,
-                stop_event=None,
-                max_retries=max_retries,
-            )
+        pass
 
     async def stop(self) -> None:
         """Stops the polling/webhook.

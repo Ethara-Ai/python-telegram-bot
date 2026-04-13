@@ -91,11 +91,4 @@ class _BaseMedium(TelegramObject):
             :class:`telegram.error.TelegramError`
 
         """
-        return await self.get_bot().get_file(
-            file_id=self.file_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass

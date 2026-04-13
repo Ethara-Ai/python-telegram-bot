@@ -192,7 +192,7 @@ class MaybeInaccessibleMessage(TelegramObject):
 
         .. versionadded:: 20.8
         """
-        return self.date != ZERO_DATE
+        pass
 
     @classmethod
     def _de_json(
@@ -1475,7 +1475,7 @@ class Message(MaybeInaccessibleMessage):
     @property
     def chat_id(self) -> int:
         """:obj:`int`: Shortcut for :attr:`telegram.Chat.id` for :attr:`chat`."""
-        return self.chat.id
+        pass
 
     @property
     def id(self) -> int:
@@ -1484,7 +1484,7 @@ class Message(MaybeInaccessibleMessage):
 
             .. versionadded:: 20.0
         """
-        return self.message_id
+        pass
 
     @property
     def link(self) -> str | None:
@@ -1495,16 +1495,7 @@ class Message(MaybeInaccessibleMessage):
                 For messages that are replies or part of a forum topic, the link now points
                 to the corresponding thread view.
         """
-        if self.chat.type not in [Chat.PRIVATE, Chat.GROUP]:
-            # if username doesn't exist, remove the leading -100 for supergroups in link
-            to_link = self.chat.username or f"c/{str(self.chat.id)[4:]}"
-            baselink = f"https://t.me/{to_link}/{self.message_id}"
-
-            # adds the thread for topics and replies
-            if (self.is_topic_message and self.message_thread_id) or self.reply_to_message:
-                baselink = f"{baselink}?thread={self.message_thread_id}"
-            return baselink
-        return None
+        pass
 
     @classmethod
     def de_json(cls, data: JSONDict, bot: "Bot | None" = None) -> "Message":
@@ -1770,52 +1761,13 @@ class Message(MaybeInaccessibleMessage):
             :attr:`successful_payment` will be removed in future major versions.
 
         """
-        if not isinstance(self._effective_attachment, DefaultValue):
-            return self._effective_attachment
-
-        for attachment_type in MessageAttachmentType:
-            if self[attachment_type]:
-                self._effective_attachment = self[attachment_type]  # type: ignore[assignment]
-                if attachment_type == MessageAttachmentType.SUCCESSFUL_PAYMENT:
-                    warn(
-                        PTBDeprecationWarning(
-                            "21.4",
-                            "successful_payment will no longer be considered an attachment in"
-                            " future major versions",
-                        ),
-                        stacklevel=2,
-                    )
-                break
-        else:
-            self._effective_attachment = None
-
-        return self._effective_attachment  # type: ignore[return-value]
+        pass
 
     def _do_quote(
         self, do_quote: bool | None, allow_sending_without_reply: ODVInput[bool] = DEFAULT_NONE
     ) -> ReplyParameters | None:
         """Modify kwargs for replying with or without quoting."""
-        # `Defaults` handling for allow_sending_without_reply is not necessary, as
-        # `ReplyParameters` have special defaults handling in (ExtBot)._insert_defaults
-        if do_quote is not None:
-            if do_quote:
-                return ReplyParameters(
-                    self.message_id, allow_sending_without_reply=allow_sending_without_reply
-                )
-
-        else:
-            # Unfortunately we need some ExtBot logic here because it's hard to move shortcut
-            # logic into ExtBot
-            if hasattr(self.get_bot(), "defaults") and self.get_bot().defaults:  # type: ignore
-                default_quote = self.get_bot().defaults.do_quote  # type: ignore[attr-defined]
-            else:
-                default_quote = None
-            if (default_quote is None and self.chat.type != Chat.PRIVATE) or default_quote:
-                return ReplyParameters(
-                    self.message_id, allow_sending_without_reply=allow_sending_without_reply
-                )
-
-        return None
+        pass
 
     def compute_quote_position_and_entities(
         self, quote: str, index: int | None = None
@@ -1852,46 +1804,7 @@ class Message(MaybeInaccessibleMessage):
             RuntimeError: If the message has neither :attr:`text` nor :attr:`caption`.
             ValueError: If the requested index of quote doesn't exist in the message.
         """
-        if not (text := (self.text or self.caption)):
-            raise RuntimeError("This message has neither text nor caption.")
-
-        # Telegram wants the position in UTF-16 code units, so we have to calculate in that space
-        utf16_text = text.encode(TextEncoding.UTF_16_LE)
-        utf16_quote = quote.encode(TextEncoding.UTF_16_LE)
-        effective_index = index or 0
-
-        matches = list(re.finditer(re.escape(utf16_quote), utf16_text))
-        if (length := len(matches)) < effective_index + 1:
-            raise ValueError(
-                f"You requested the {index}-th occurrence of '{quote}', but this text appears "
-                f"only {length} times."
-            )
-
-        position = len(utf16_text[: matches[effective_index].start()]) // 2
-        length = len(utf16_quote) // 2
-        end_position = position + length
-
-        entities = []
-        for entity in self.entities or self.caption_entities:
-            if position <= entity.offset + entity.length and entity.offset <= end_position:
-                # shift the offset by the position of the quote
-                offset = max(0, entity.offset - position)
-                # trim the entity length to the length of the overlap with the quote
-                e_length = min(end_position, entity.offset + entity.length) - max(
-                    position, entity.offset
-                )
-                if e_length <= 0:
-                    continue
-
-                # create a new entity with the correct offset and length
-                # looping over slots rather manually accessing the attributes
-                # is more future-proof
-                kwargs = {attr: getattr(entity, attr) for attr in entity.__slots__}
-                kwargs["offset"] = offset
-                kwargs["length"] = e_length
-                entities.append(MessageEntity(**kwargs))
-
-        return position, tuple(entities) or None
+        pass
 
     def build_reply_arguments(
         self,
@@ -1956,91 +1869,9 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`dict`:
         """
-        target_chat_is_self = target_chat_id in (None, self.chat_id, f"@{self.chat.username}")
+        pass
 
-        if target_chat_is_self and message_thread_id in (
-            None,
-            self.message_thread_id,
-        ):
-            # defaults handling will take place in `Bot._insert_defaults`
-            effective_aswr: ODVInput[bool] = allow_sending_without_reply
-        else:
-            effective_aswr = None
 
-        quote_position, quote_entities = (
-            self.compute_quote_position_and_entities(quote, quote_index) if quote else (None, None)
-        )
-        return {  # type: ignore[typeddict-item]
-            "reply_parameters": ReplyParameters(
-                chat_id=None if target_chat_is_self else self.chat_id,
-                message_id=self.message_id,
-                quote=quote,
-                quote_position=quote_position,
-                quote_entities=quote_entities,
-                allow_sending_without_reply=effective_aswr,
-            ),
-            "chat_id": target_chat_id or self.chat_id,
-        }
-
-    async def _parse_quote_arguments(
-        self,
-        do_quote: bool | _ReplyKwargs | None,
-        reply_to_message_id: int | None,
-        reply_parameters: "ReplyParameters | None",
-        allow_sending_without_reply: ODVInput[bool] = DEFAULT_NONE,
-    ) -> tuple[str | int, ReplyParameters]:
-        if allow_sending_without_reply is not DEFAULT_NONE and reply_parameters is not None:
-            raise ValueError(
-                "`allow_sending_without_reply` and `reply_parameters` are mutually exclusive."
-            )
-        if reply_to_message_id is not None and reply_parameters is not None:
-            raise ValueError(
-                "`reply_to_message_id` and `reply_parameters` are mutually exclusive."
-            )
-
-        chat_id: str | int = self.chat_id
-
-        # reply_parameters and reply_to_message_id overrule the do_quote parameter
-        if reply_parameters is not None:
-            effective_reply_parameters = reply_parameters
-        elif reply_to_message_id is not None:
-            effective_reply_parameters = ReplyParameters(
-                message_id=reply_to_message_id,
-                allow_sending_without_reply=allow_sending_without_reply,
-            )
-        elif isinstance(do_quote, dict):
-            if allow_sending_without_reply is not DEFAULT_NONE:
-                raise ValueError(
-                    "`allow_sending_without_reply` and `dict`-value input for `do_quote` are "
-                    "mutually exclusive."
-                )
-
-            effective_reply_parameters = do_quote["reply_parameters"]
-            chat_id = do_quote["chat_id"]
-        else:
-            effective_reply_parameters = self._do_quote(do_quote, allow_sending_without_reply)
-
-        return chat_id, effective_reply_parameters
-
-    def _parse_message_thread_id(
-        self,
-        chat_id: str | int,
-        message_thread_id: ODVInput[int] = DEFAULT_NONE,
-    ) -> int | None:
-        # values set by user have the highest priority
-        if not isinstance(message_thread_id, DefaultValue):
-            return message_thread_id
-
-        # self.message_thread_id can be used for send_*.param.message_thread_id only if the
-        # thread is a forum topic (in supergroups or private chats). It does not work if the
-        # thread is a chain of replies to a message in a normal group. In that case,
-        # self.message_thread_id is just the message_id of the first message in the chain.
-        if not self.is_topic_message:
-            return None
-
-        # Setting message_thread_id=self.message_thread_id only makes sense if we're replying in
-        # the same chat.
-        return self.message_thread_id if chat_id in {self.chat_id, self.chat.username} else None
 
     def _extract_direct_messages_topic_id(self) -> int | None:
         """Return the topic id of the direct messages chat, if it is present."""
@@ -2099,33 +1930,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_message(
-            chat_id=chat_id,
-            text=text,
-            parse_mode=parse_mode,
-            disable_web_page_preview=disable_web_page_preview,
-            link_preview_options=link_preview_options,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            entities=entities,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_text_draft(
         self,
@@ -2161,20 +1966,7 @@ class Message(MaybeInaccessibleMessage):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        message_thread_id = self._parse_message_thread_id(self.chat_id, message_thread_id)
-        return await self.get_bot().send_message_draft(
-            chat_id=self.chat_id,
-            draft_id=draft_id,
-            text=text,
-            parse_mode=parse_mode,
-            entities=entities,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def reply_markdown(
         self,
@@ -2234,33 +2026,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :class:`telegram.Message`: On success, instance representing the message posted.
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_message(
-            chat_id=chat_id,
-            text=text,
-            parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=disable_web_page_preview,
-            link_preview_options=link_preview_options,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            entities=entities,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_markdown_v2(
         self,
@@ -2316,33 +2082,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :class:`telegram.Message`: On success, instance representing the message posted.
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_message(
-            chat_id=chat_id,
-            text=text,
-            parse_mode=ParseMode.MARKDOWN_V2,
-            disable_web_page_preview=disable_web_page_preview,
-            link_preview_options=link_preview_options,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            entities=entities,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_html(
         self,
@@ -2398,33 +2138,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :class:`telegram.Message`: On success, instance representing the message posted.
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_message(
-            chat_id=chat_id,
-            text=text,
-            parse_mode=ParseMode.HTML,
-            disable_web_page_preview=disable_web_page_preview,
-            link_preview_options=link_preview_options,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            entities=entities,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_media_group(
         self,
@@ -2480,30 +2194,7 @@ class Message(MaybeInaccessibleMessage):
         Raises:
             :class:`telegram.error.TelegramError`
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_media_group(
-            chat_id=chat_id,
-            media=media,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            caption=caption,
-            parse_mode=parse_mode,
-            caption_entities=caption_entities,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-        )
+        pass
 
     async def reply_photo(
         self,
@@ -2560,35 +2251,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_photo(
-            chat_id=chat_id,
-            photo=photo,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            parse_mode=parse_mode,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            has_spoiler=has_spoiler,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            show_caption_above_media=show_caption_above_media,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_audio(
         self,
@@ -2647,37 +2310,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_audio(
-            chat_id=chat_id,
-            audio=audio,
-            duration=duration,
-            performer=performer,
-            title=title,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            parse_mode=parse_mode,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            thumbnail=thumbnail,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_document(
         self,
@@ -2734,35 +2367,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_document(
-            chat_id=chat_id,
-            document=document,
-            filename=filename,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            parse_mode=parse_mode,
-            api_kwargs=api_kwargs,
-            disable_content_type_detection=disable_content_type_detection,
-            caption_entities=caption_entities,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            thumbnail=thumbnail,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_animation(
         self,
@@ -2823,39 +2428,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_animation(
-            chat_id=chat_id,
-            animation=animation,
-            duration=duration,
-            width=width,
-            height=height,
-            caption=caption,
-            parse_mode=parse_mode,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            has_spoiler=has_spoiler,
-            thumbnail=thumbnail,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            show_caption_above_media=show_caption_above_media,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_sticker(
         self,
@@ -2907,30 +2480,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_sticker(
-            chat_id=chat_id,
-            sticker=sticker,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            emoji=emoji,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_video(
         self,
@@ -2994,42 +2544,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_video(
-            chat_id=chat_id,
-            video=video,
-            duration=duration,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            width=width,
-            height=height,
-            parse_mode=parse_mode,
-            supports_streaming=supports_streaming,
-            api_kwargs=api_kwargs,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            has_spoiler=has_spoiler,
-            thumbnail=thumbnail,
-            cover=cover,
-            start_timestamp=start_timestamp,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            show_caption_above_media=show_caption_above_media,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_video_note(
         self,
@@ -3084,33 +2599,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_video_note(
-            chat_id=chat_id,
-            video_note=video_note,
-            duration=duration,
-            length=length,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            thumbnail=thumbnail,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_voice(
         self,
@@ -3166,34 +2655,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_voice(
-            chat_id=chat_id,
-            voice=voice,
-            duration=duration,
-            caption=caption,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            parse_mode=parse_mode,
-            api_kwargs=api_kwargs,
-            caption_entities=caption_entities,
-            filename=filename,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_location(
         self,
@@ -3250,35 +2712,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_location(
-            chat_id=chat_id,
-            latitude=latitude,
-            longitude=longitude,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            location=location,
-            live_period=live_period,
-            api_kwargs=api_kwargs,
-            horizontal_accuracy=horizontal_accuracy,
-            heading=heading,
-            proximity_alert_radius=proximity_alert_radius,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_venue(
         self,
@@ -3337,37 +2771,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_venue(
-            chat_id=chat_id,
-            latitude=latitude,
-            longitude=longitude,
-            title=title,
-            address=address,
-            foursquare_id=foursquare_id,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            venue=venue,
-            foursquare_type=foursquare_type,
-            api_kwargs=api_kwargs,
-            google_place_id=google_place_id,
-            google_place_type=google_place_type,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_contact(
         self,
@@ -3422,33 +2826,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_contact(
-            chat_id=chat_id,
-            phone_number=phone_number,
-            first_name=first_name,
-            last_name=last_name,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            contact=contact,
-            vcard=vcard,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            allow_paid_broadcast=allow_paid_broadcast,
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_poll(
         self,
@@ -3510,40 +2888,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_poll(
-            chat_id=chat_id,
-            question=question,
-            options=options,
-            is_anonymous=is_anonymous,
-            type=type,
-            allows_multiple_answers=allows_multiple_answers,
-            correct_option_id=correct_option_id,
-            is_closed=is_closed,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            explanation=explanation,
-            explanation_parse_mode=explanation_parse_mode,
-            open_period=open_period,
-            close_date=close_date,
-            api_kwargs=api_kwargs,
-            explanation_entities=explanation_entities,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=self.business_connection_id,
-            question_parse_mode=question_parse_mode,
-            question_entities=question_entities,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-        )
+        pass
 
     async def reply_dice(
         self,
@@ -3594,29 +2939,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_dice(
-            chat_id=chat_id,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            emoji=emoji,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def reply_checklist(
         self,
@@ -3656,24 +2979,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        return await self.get_bot().send_checklist(
-            business_connection_id=self.business_connection_id,
-            chat_id=chat_id,  # type: ignore[arg-type]
-            checklist=checklist,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_effect_id=message_effect_id,
-        )
+        pass
 
     async def reply_chat_action(
         self,
@@ -3707,17 +3013,7 @@ class Message(MaybeInaccessibleMessage):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().send_chat_action(
-            chat_id=self.chat_id,
-            message_thread_id=self._parse_message_thread_id(self.chat_id, message_thread_id),
-            action=action,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            business_connection_id=self.business_connection_id,
-        )
+        pass
 
     async def reply_game(
         self,
@@ -3768,27 +3064,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_game(
-            chat_id=chat_id,  # type: ignore[arg-type]
-            game_short_name=game_short_name,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            business_connection_id=self.business_connection_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-        )
+        pass
 
     async def reply_invoice(
         self,
@@ -3870,48 +3146,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message posted.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_invoice(
-            chat_id=chat_id,
-            title=title,
-            description=description,
-            payload=payload,
-            provider_token=provider_token,
-            currency=currency,
-            prices=prices,
-            start_parameter=start_parameter,
-            photo_url=photo_url,
-            photo_size=photo_size,
-            photo_width=photo_width,
-            photo_height=photo_height,
-            need_name=need_name,
-            need_phone_number=need_phone_number,
-            need_email=need_email,
-            need_shipping_address=need_shipping_address,
-            is_flexible=is_flexible,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            provider_data=provider_data,
-            send_phone_number_to_provider=send_phone_number_to_provider,
-            send_email_to_provider=send_email_to_provider,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            max_tip_amount=max_tip_amount,
-            suggested_tip_amounts=suggested_tip_amounts,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            message_effect_id=message_effect_id,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-        )
+        pass
 
     async def forward(
         self,
@@ -3953,23 +3188,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, instance representing the message forwarded.
 
         """
-        return await self.get_bot().forward_message(
-            chat_id=chat_id,
-            from_chat_id=self.chat_id,
-            message_id=self.message_id,
-            video_start_timestamp=video_start_timestamp,
-            disable_notification=disable_notification,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            suggested_post_parameters=suggested_post_parameters,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            message_effect_id=message_effect_id,
-        )
+        pass
 
     async def copy(
         self,
@@ -4095,34 +3314,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.MessageId`: On success, returns the MessageId of the sent message.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().copy_message(
-            chat_id=chat_id,
-            from_chat_id=from_chat_id,
-            message_id=message_id,
-            caption=caption,
-            video_start_timestamp=video_start_timestamp,
-            parse_mode=parse_mode,
-            caption_entities=caption_entities,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            message_thread_id=message_thread_id,
-            show_caption_above_media=show_caption_above_media,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-            message_effect_id=message_effect_id,
-        )
+        pass
 
     async def reply_paid_media(
         self,
@@ -4172,34 +3364,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, the sent message is returned.
 
         """
-        chat_id, effective_reply_parameters = await self._parse_quote_arguments(
-            do_quote, reply_to_message_id, reply_parameters, allow_sending_without_reply
-        )
-        message_thread_id = self._parse_message_thread_id(chat_id, message_thread_id)
-        return await self.get_bot().send_paid_media(
-            chat_id=chat_id,
-            caption=caption,
-            star_count=star_count,
-            media=media,
-            payload=payload,
-            business_connection_id=self.business_connection_id,
-            parse_mode=parse_mode,
-            caption_entities=caption_entities,
-            disable_notification=disable_notification,
-            reply_parameters=effective_reply_parameters,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            protect_content=protect_content,
-            show_caption_above_media=show_caption_above_media,
-            allow_paid_broadcast=allow_paid_broadcast,
-            direct_messages_topic_id=self._extract_direct_messages_topic_id(),
-            suggested_post_parameters=suggested_post_parameters,
-            message_thread_id=message_thread_id,
-        )
+        pass
 
     async def edit_text(
         self,
@@ -4240,23 +3405,7 @@ class Message(MaybeInaccessibleMessage):
             edited Message is returned, otherwise ``True`` is returned.
 
         """
-        return await self.get_bot().edit_message_text(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            text=text,
-            parse_mode=parse_mode,
-            disable_web_page_preview=disable_web_page_preview,
-            link_preview_options=link_preview_options,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            entities=entities,
-            inline_message_id=None,
-            business_connection_id=self.business_connection_id,
-        )
+        pass
 
     async def edit_caption(
         self,
@@ -4297,22 +3446,7 @@ class Message(MaybeInaccessibleMessage):
             edited Message is returned, otherwise ``True`` is returned.
 
         """
-        return await self.get_bot().edit_message_caption(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            caption=caption,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            parse_mode=parse_mode,
-            api_kwargs=api_kwargs,
-            caption_entities=caption_entities,
-            inline_message_id=None,
-            show_caption_above_media=show_caption_above_media,
-            business_connection_id=self.business_connection_id,
-        )
+        pass
 
     async def edit_checklist(
         self,
@@ -4348,18 +3482,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, the edited Message is returned.
 
         """
-        return await self.get_bot().edit_message_checklist(
-            business_connection_id=self.business_connection_id,
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            checklist=checklist,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def edit_media(
         self,
@@ -4397,19 +3520,7 @@ class Message(MaybeInaccessibleMessage):
             edited Message is returned, otherwise ``True`` is returned.
 
         """
-        return await self.get_bot().edit_message_media(
-            media=media,
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            inline_message_id=None,
-            business_connection_id=self.business_connection_id,
-        )
+        pass
 
     async def edit_reply_markup(
         self,
@@ -4445,18 +3556,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, if edited message is sent by the bot, the
             edited Message is returned, otherwise ``True`` is returned.
         """
-        return await self.get_bot().edit_message_reply_markup(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            inline_message_id=None,
-            business_connection_id=self.business_connection_id,
-        )
+        pass
 
     async def edit_live_location(
         self,
@@ -4499,25 +3599,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, if edited message is sent by the bot, the
             edited Message is returned, otherwise :obj:`True` is returned.
         """
-        return await self.get_bot().edit_message_live_location(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            latitude=latitude,
-            longitude=longitude,
-            location=location,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            horizontal_accuracy=horizontal_accuracy,
-            heading=heading,
-            proximity_alert_radius=proximity_alert_radius,
-            live_period=live_period,
-            inline_message_id=None,
-            business_connection_id=self.business_connection_id,
-        )
+        pass
 
     async def stop_live_location(
         self,
@@ -4553,18 +3635,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, if edited message is sent by the bot, the
             edited Message is returned, otherwise :obj:`True` is returned.
         """
-        return await self.get_bot().stop_message_live_location(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            inline_message_id=None,
-            business_connection_id=self.business_connection_id,
-        )
+        pass
 
     async def set_game_score(
         self,
@@ -4596,20 +3667,7 @@ class Message(MaybeInaccessibleMessage):
             :class:`telegram.Message`: On success, if edited message is sent by the bot, the
             edited Message is returned, otherwise :obj:`True` is returned.
         """
-        return await self.get_bot().set_game_score(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            user_id=user_id,
-            score=score,
-            force=force,
-            disable_edit_message=disable_edit_message,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            inline_message_id=None,
-        )
+        pass
 
     async def get_game_high_scores(
         self,
@@ -4638,17 +3696,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             tuple[:class:`telegram.GameHighScore`]
         """
-        return await self.get_bot().get_game_high_scores(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            user_id=user_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            inline_message_id=None,
-        )
+        pass
 
     async def delete(
         self,
@@ -4686,25 +3734,7 @@ class Message(MaybeInaccessibleMessage):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        if self.business_connection_id:
-            return await self.get_bot().delete_business_messages(
-                business_connection_id=self.business_connection_id,
-                message_ids=[self.message_id],
-                read_timeout=read_timeout,
-                write_timeout=write_timeout,
-                connect_timeout=connect_timeout,
-                pool_timeout=pool_timeout,
-                api_kwargs=api_kwargs,
-            )
-        return await self.get_bot().delete_message(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def stop_poll(
         self,
@@ -4735,17 +3765,7 @@ class Message(MaybeInaccessibleMessage):
             returned.
 
         """
-        return await self.get_bot().stop_poll(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            reply_markup=reply_markup,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-            business_connection_id=self.business_connection_id,
-        )
+        pass
 
     async def pin(
         self,
@@ -4776,17 +3796,7 @@ class Message(MaybeInaccessibleMessage):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().pin_chat_message(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            business_connection_id=self.business_connection_id,
-            disable_notification=disable_notification,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def unpin(
         self,
@@ -4816,16 +3826,7 @@ class Message(MaybeInaccessibleMessage):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().unpin_chat_message(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            business_connection_id=self.business_connection_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def edit_forum_topic(
         self,
@@ -4853,17 +3854,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().edit_forum_topic(
-            chat_id=self.chat_id,
-            message_thread_id=self.message_thread_id,
-            name=name,
-            icon_custom_emoji_id=icon_custom_emoji_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def close_forum_topic(
         self,
@@ -4889,15 +3880,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().close_forum_topic(
-            chat_id=self.chat_id,
-            message_thread_id=self.message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def reopen_forum_topic(
         self,
@@ -4923,15 +3906,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().reopen_forum_topic(
-            chat_id=self.chat_id,
-            message_thread_id=self.message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def delete_forum_topic(
         self,
@@ -4957,15 +3932,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().delete_forum_topic(
-            chat_id=self.chat_id,
-            message_thread_id=self.message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def unpin_all_forum_topic_messages(
         self,
@@ -4991,15 +3958,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`bool`: On success, :obj:`True` is returned.
         """
-        return await self.get_bot().unpin_all_forum_topic_messages(
-            chat_id=self.chat_id,
-            message_thread_id=self.message_thread_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def set_reaction(
         self,
@@ -5025,17 +3984,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`bool` On success, :obj:`True` is returned.
         """
-        return await self.get_bot().set_message_reaction(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            reaction=reaction,
-            is_big=is_big,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def read_business_message(
         self,
@@ -5063,16 +4012,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`bool` On success, :obj:`True` is returned.
         """
-        return await self.get_bot().read_business_message(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            business_connection_id=self.business_connection_id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def approve_suggested_post(
         self,
@@ -5100,16 +4040,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`bool` On success, :obj:`True` is returned.
         """
-        return await self.get_bot().approve_suggested_post(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            send_date=send_date,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def decline_suggested_post(
         self,
@@ -5137,16 +4068,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`bool` On success, :obj:`True` is returned.
         """
-        return await self.get_bot().decline_suggested_post(
-            chat_id=self.chat_id,
-            message_id=self.message_id,
-            comment=comment,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     def parse_entity(self, entity: MessageEntity) -> str:
         """Returns the text from a given :class:`telegram.MessageEntity`.
@@ -5167,10 +4089,7 @@ class Message(MaybeInaccessibleMessage):
             RuntimeError: If the message has no text.
 
         """
-        if not self.text:
-            raise RuntimeError("This Message has no 'text'.")
-
-        return parse_message_entity(self.text, entity)
+        pass
 
     def parse_caption_entity(self, entity: MessageEntity) -> str:
         """Returns the text from a given :class:`telegram.MessageEntity`.
@@ -5191,10 +4110,7 @@ class Message(MaybeInaccessibleMessage):
             RuntimeError: If the message has no caption.
 
         """
-        if not self.caption:
-            raise RuntimeError("This Message has no 'caption'.")
-
-        return parse_message_entity(self.caption, entity)
+        pass
 
     def parse_entities(self, types: list[str | None] | None = None) -> dict[MessageEntity, str]:
         """
@@ -5219,7 +4135,7 @@ class Message(MaybeInaccessibleMessage):
             the text that belongs to them, calculated based on UTF-16 codepoints.
 
         """
-        return parse_message_entities(self.text, self.entities, types=types)
+        pass
 
     def parse_caption_entities(
         self, types: list[str | None] | None = None
@@ -5246,107 +4162,8 @@ class Message(MaybeInaccessibleMessage):
             the text that belongs to them, calculated based on UTF-16 codepoints.
 
         """
-        return parse_message_entities(self.caption, self.caption_entities, types=types)
+        pass
 
-    @classmethod
-    def _parse_html(
-        cls,
-        message_text: str | None,
-        entities: dict[MessageEntity, str],
-        urled: bool = False,
-        offset: int = 0,
-    ) -> str | None:
-        if message_text is None:
-            return None
-
-        utf_16_text = message_text.encode(TextEncoding.UTF_16_LE)
-        html_text = ""
-        last_offset = 0
-
-        sorted_entities = sorted(entities.items(), key=lambda item: item[0].offset)
-        parsed_entities = []
-
-        for entity, text in sorted_entities:
-            if entity in parsed_entities:
-                continue
-
-            nested_entities = {
-                e: t
-                for (e, t) in sorted_entities
-                if e.offset >= entity.offset
-                and e.offset + e.length <= entity.offset + entity.length
-                and e != entity
-            }
-            parsed_entities.extend(list(nested_entities.keys()))
-
-            if nested_entities:
-                escaped_text = cls._parse_html(
-                    text, nested_entities, urled=urled, offset=entity.offset
-                )
-            else:
-                escaped_text = escape(text)
-
-            if entity.type == MessageEntity.TEXT_LINK:
-                insert = f'<a href="{entity.url}">{escaped_text}</a>'
-            elif entity.type == MessageEntity.TEXT_MENTION and entity.user:
-                insert = f'<a href="tg://user?id={entity.user.id}">{escaped_text}</a>'
-            elif entity.type == MessageEntity.URL and urled:
-                insert = f'<a href="{escaped_text}">{escaped_text}</a>'
-            elif entity.type == MessageEntity.BLOCKQUOTE:
-                insert = f"<blockquote>{escaped_text}</blockquote>"
-            elif entity.type == MessageEntity.EXPANDABLE_BLOCKQUOTE:
-                insert = f"<blockquote expandable>{escaped_text}</blockquote>"
-            elif entity.type == MessageEntity.BOLD:
-                insert = f"<b>{escaped_text}</b>"
-            elif entity.type == MessageEntity.ITALIC:
-                insert = f"<i>{escaped_text}</i>"
-            elif entity.type == MessageEntity.CODE:
-                insert = f"<code>{escaped_text}</code>"
-            elif entity.type == MessageEntity.PRE:
-                if entity.language:
-                    insert = f'<pre><code class="{entity.language}">{escaped_text}</code></pre>'
-                else:
-                    insert = f"<pre>{escaped_text}</pre>"
-            elif entity.type == MessageEntity.UNDERLINE:
-                insert = f"<u>{escaped_text}</u>"
-            elif entity.type == MessageEntity.STRIKETHROUGH:
-                insert = f"<s>{escaped_text}</s>"
-            elif entity.type == MessageEntity.SPOILER:
-                insert = f'<span class="tg-spoiler">{escaped_text}</span>'
-            elif entity.type == MessageEntity.CUSTOM_EMOJI:
-                insert = f'<tg-emoji emoji-id="{entity.custom_emoji_id}">{escaped_text}</tg-emoji>'
-            elif entity.type == MessageEntity.DATE_TIME:
-                if entity.date_time_format:
-                    insert = (
-                        f'<tg-time unix="{to_timestamp(entity.unix_time)}" '
-                        f'format="{entity.date_time_format}">{escaped_text}</tg-time>'
-                    )
-                else:
-                    insert = (
-                        f'<tg-time unix="{to_timestamp(entity.unix_time)}">'
-                        f"{escaped_text}</tg-time>"
-                    )
-            else:
-                insert = escaped_text
-
-            # Make sure to escape the text that is not part of the entity
-            # if we're in a nested entity, this is still required, since in that case this
-            # text is part of the parent entity
-            html_text += (
-                escape(
-                    utf_16_text[last_offset * 2 : (entity.offset - offset) * 2].decode(
-                        TextEncoding.UTF_16_LE
-                    )
-                )
-                + insert
-            )
-
-            last_offset = entity.offset - offset + entity.length
-
-        # see comment above
-        html_text += escape(utf_16_text[last_offset * 2 :].decode(TextEncoding.UTF_16_LE))
-
-        return html_text
 
     @property
     def text_html(self) -> str:
@@ -5371,7 +4188,7 @@ class Message(MaybeInaccessibleMessage):
             :obj:`str`: Message text with entities formatted as HTML.
 
         """
-        return self._parse_html(self.text, self.parse_entities(), urled=False)
+        pass
 
     @property
     def text_html_urled(self) -> str:
@@ -5396,7 +4213,7 @@ class Message(MaybeInaccessibleMessage):
             :obj:`str`: Message text with entities formatted as HTML.
 
         """
-        return self._parse_html(self.text, self.parse_entities(), urled=True)
+        pass
 
     @property
     def caption_html(self) -> str:
@@ -5421,7 +4238,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`str`: Message caption with caption entities formatted as HTML.
         """
-        return self._parse_html(self.caption, self.parse_caption_entities(), urled=False)
+        pass
 
     @property
     def caption_html_urled(self) -> str:
@@ -5446,151 +4263,8 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`str`: Message caption with caption entities formatted as HTML.
         """
-        return self._parse_html(self.caption, self.parse_caption_entities(), urled=True)
+        pass
 
-    @classmethod
-    def _parse_markdown(
-        cls,
-        message_text: str | None,
-        entities: dict[MessageEntity, str],
-        urled: bool = False,
-        version: MarkdownVersion = 1,
-        offset: int = 0,
-    ) -> str | None:
-        if version == 1:
-            for entity_type in (
-                MessageEntity.EXPANDABLE_BLOCKQUOTE,
-                MessageEntity.BLOCKQUOTE,
-                MessageEntity.CUSTOM_EMOJI,
-                MessageEntity.SPOILER,
-                MessageEntity.STRIKETHROUGH,
-                MessageEntity.UNDERLINE,
-                MessageEntity.DATE_TIME,
-            ):
-                if any(entity.type == entity_type for entity in entities):
-                    name = entity_type.name.title().replace("_", " ")  # type:ignore[attr-defined]
-                    raise ValueError(f"{name} entities are not supported for Markdown version 1")
-
-        if message_text is None:
-            return None
-
-        utf_16_text = message_text.encode(TextEncoding.UTF_16_LE)
-        markdown_text = ""
-        last_offset = 0
-
-        sorted_entities = sorted(entities.items(), key=lambda item: item[0].offset)
-        parsed_entities = []
-
-        for entity, text in sorted_entities:
-            if entity in parsed_entities:
-                continue
-
-            nested_entities = {
-                e: t
-                for (e, t) in sorted_entities
-                if e.offset >= entity.offset
-                and e.offset + e.length <= entity.offset + entity.length
-                and e != entity
-            }
-            parsed_entities.extend(list(nested_entities.keys()))
-
-            if nested_entities:
-                if version < 2:
-                    raise ValueError("Nested entities are not supported for Markdown version 1")
-
-                escaped_text = cls._parse_markdown(
-                    text,
-                    nested_entities,
-                    urled=urled,
-                    offset=entity.offset,
-                    version=version,
-                )
-            else:
-                escaped_text = escape_markdown(text, version=version)
-
-            if entity.type == MessageEntity.TEXT_LINK:
-                if version == 1:
-                    url = entity.url
-                else:
-                    # Links need special escaping. Also can't have entities nested within
-                    url = escape_markdown(
-                        entity.url, version=version, entity_type=MessageEntity.TEXT_LINK
-                    )
-                insert = f"[{escaped_text}]({url})"
-            elif entity.type == MessageEntity.TEXT_MENTION and entity.user:
-                insert = f"[{escaped_text}](tg://user?id={entity.user.id})"
-            elif entity.type == MessageEntity.URL and urled:
-                link = text if version == 1 else escaped_text
-                insert = f"[{link}]({text})"
-            elif entity.type == MessageEntity.BOLD:
-                insert = f"*{escaped_text}*"
-            elif entity.type == MessageEntity.ITALIC:
-                insert = f"_{escaped_text}_"
-            elif entity.type == MessageEntity.CODE:
-                # Monospace needs special escaping. Also can't have entities nested within
-                insert = f"`{escape_markdown(text, version, MessageEntity.CODE)}`"
-            elif entity.type == MessageEntity.PRE:
-                # Monospace needs special escaping. Also can't have entities nested within
-                code = escape_markdown(text, version=version, entity_type=MessageEntity.PRE)
-                if entity.language:
-                    prefix = f"```{entity.language}\n"
-                elif code.startswith("\\"):
-                    prefix = "```"
-                else:
-                    prefix = "```\n"
-                insert = f"{prefix}{code}```"
-            elif entity.type == MessageEntity.UNDERLINE:
-                insert = f"__{escaped_text}__"
-            elif entity.type == MessageEntity.STRIKETHROUGH:
-                insert = f"~{escaped_text}~"
-            elif entity.type == MessageEntity.SPOILER:
-                insert = f"||{escaped_text}||"
-            elif entity.type in (MessageEntity.BLOCKQUOTE, MessageEntity.EXPANDABLE_BLOCKQUOTE):
-                insert = ">" + "\n>".join(escaped_text.splitlines())
-                if entity.type == MessageEntity.EXPANDABLE_BLOCKQUOTE:
-                    insert = f"{insert}||"
-            elif entity.type == MessageEntity.CUSTOM_EMOJI:
-                # This should never be needed because ids are numeric but the documentation
-                # specifically mentions it so here we are
-                custom_emoji_id = escape_markdown(
-                    entity.custom_emoji_id,
-                    version=version,
-                    entity_type=MessageEntity.CUSTOM_EMOJI,
-                )
-                insert = f"![{escaped_text}](tg://emoji?id={custom_emoji_id})"
-            elif entity.type == MessageEntity.DATE_TIME:
-                if entity.date_time_format:
-                    insert = (
-                        f"![{escaped_text}](tg://time?unix={to_timestamp(entity.unix_time)}"
-                        f"&format={entity.date_time_format})"
-                    )
-                else:
-                    insert = f"![{escaped_text}](tg://time?unix={to_timestamp(entity.unix_time)})"
-            else:
-                insert = escaped_text
-
-            # Make sure to escape the text that is not part of the entity
-            # if we're in a nested entity, this is still required, since in that case this
-            # text is part of the parent entity
-            markdown_text += (
-                escape_markdown(
-                    utf_16_text[last_offset * 2 : (entity.offset - offset) * 2].decode(
-                        TextEncoding.UTF_16_LE
-                    ),
-                    version=version,
-                )
-                + insert
-            )
-
-            last_offset = entity.offset - offset + entity.length
-
-        # see comment above
-        markdown_text += escape_markdown(
-            utf_16_text[last_offset * 2 :].decode(TextEncoding.UTF_16_LE),
-            version=version,
-        )
-
-        return markdown_text
 
     @property
     def text_markdown(self) -> str:
@@ -5621,7 +4295,7 @@ class Message(MaybeInaccessibleMessage):
                 blockquote or nested entities.
 
         """
-        return self._parse_markdown(self.text, self.parse_entities(), urled=False)
+        pass
 
     @property
     def text_markdown_v2(self) -> str:
@@ -5646,7 +4320,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`str`: Message text with entities formatted as Markdown.
         """
-        return self._parse_markdown(self.text, self.parse_entities(), urled=False, version=2)
+        pass
 
     @property
     def text_markdown_urled(self) -> str:
@@ -5678,7 +4352,7 @@ class Message(MaybeInaccessibleMessage):
                 blockquote or nested entities.
 
         """
-        return self._parse_markdown(self.text, self.parse_entities(), urled=True)
+        pass
 
     @property
     def text_markdown_v2_urled(self) -> str:
@@ -5703,7 +4377,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`str`: Message text with entities formatted as Markdown.
         """
-        return self._parse_markdown(self.text, self.parse_entities(), urled=True, version=2)
+        pass
 
     @property
     def caption_markdown(self) -> str:
@@ -5733,7 +4407,7 @@ class Message(MaybeInaccessibleMessage):
                 blockquote or nested entities.
 
         """
-        return self._parse_markdown(self.caption, self.parse_caption_entities(), urled=False)
+        pass
 
     @property
     def caption_markdown_v2(self) -> str:
@@ -5758,9 +4432,7 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`str`: Message caption with caption entities formatted as Markdown.
         """
-        return self._parse_markdown(
-            self.caption, self.parse_caption_entities(), urled=False, version=2
-        )
+        pass
 
     @property
     def caption_markdown_urled(self) -> str:
@@ -5792,7 +4464,7 @@ class Message(MaybeInaccessibleMessage):
                 blockquote or nested entities.
 
         """
-        return self._parse_markdown(self.caption, self.parse_caption_entities(), urled=True)
+        pass
 
     @property
     def caption_markdown_v2_urled(self) -> str:
@@ -5817,6 +4489,4 @@ class Message(MaybeInaccessibleMessage):
         Returns:
             :obj:`str`: Message caption with caption entities formatted as Markdown.
         """
-        return self._parse_markdown(
-            self.caption, self.parse_caption_entities(), urled=True, version=2
-        )
+        pass

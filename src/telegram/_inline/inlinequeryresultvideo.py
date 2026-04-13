@@ -192,6 +192,3 @@ class InlineQueryResultVideo(InlineQueryResult):
             self.input_message_content: InputMessageContent | None = input_message_content
             self.show_caption_above_media: bool | None = show_caption_above_media
 
-    @property
-    def video_duration(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._video_duration, attribute="video_duration")

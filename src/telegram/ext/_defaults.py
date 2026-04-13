@@ -208,16 +208,13 @@ class Defaults:
             return all(getattr(self, attr) == getattr(other, attr) for attr in self.__slots__)
         return False
 
-    @property
-    def api_defaults(self) -> dict[str, Any]:  # skip-cq: PY-D0003
-        return self._api_defaults
 
     @property
     def parse_mode(self) -> str | None:
         """:obj:`str`: Optional. Send Markdown or HTML, if you want Telegram apps to show
         bold, italic, fixed-width text or URLs in your bot's message.
         """
-        return self._parse_mode
+        pass
 
     @parse_mode.setter
     def parse_mode(self, _: object) -> NoReturn:
@@ -228,7 +225,7 @@ class Defaults:
         """:obj:`str`: Optional. Alias for :attr:`parse_mode`, used for
         the corresponding parameter of :meth:`telegram.Bot.send_poll`.
         """
-        return self._parse_mode
+        pass
 
     @explanation_parse_mode.setter
     def explanation_parse_mode(self, _: object) -> NoReturn:
@@ -241,7 +238,7 @@ class Defaults:
         """:obj:`str`: Optional. Alias for :attr:`parse_mode`, used for
         the corresponding parameter of :meth:`telegram.ReplyParameters`.
         """
-        return self._parse_mode
+        pass
 
     @quote_parse_mode.setter
     def quote_parse_mode(self, _: object) -> NoReturn:
@@ -257,7 +254,7 @@ class Defaults:
 
         .. versionadded:: 21.2
         """
-        return self._parse_mode
+        pass
 
     @text_parse_mode.setter
     def text_parse_mode(self, _: object) -> NoReturn:
@@ -272,7 +269,7 @@ class Defaults:
 
         .. versionadded:: 21.2
         """
-        return self._parse_mode
+        pass
 
     @question_parse_mode.setter
     def question_parse_mode(self, _: object) -> NoReturn:
@@ -285,7 +282,7 @@ class Defaults:
         """:obj:`bool`: Optional. Sends the message silently. Users will
         receive a notification with no sound.
         """
-        return self._disable_notification
+        pass
 
     @disable_notification.setter
     def disable_notification(self, _: object) -> NoReturn:
@@ -298,7 +295,7 @@ class Defaults:
         """:obj:`bool`: Optional. Pass :obj:`True`, if the message
         should be sent even if the specified replied-to message is not found.
         """
-        return self._allow_sending_without_reply
+        pass
 
     @allow_sending_without_reply.setter
     def allow_sending_without_reply(self, _: object) -> NoReturn:
@@ -311,7 +308,7 @@ class Defaults:
         """:obj:`tzinfo`: A timezone to be used for all date(time) objects appearing
         throughout PTB.
         """
-        return self._tzinfo
+        pass
 
     @tzinfo.setter
     def tzinfo(self, _: object) -> NoReturn:
@@ -323,7 +320,7 @@ class Defaults:
         of handlers and error handlers registered through :meth:`Application.add_handler` and
         :meth:`Application.add_error_handler`.
         """
-        return self._block
+        pass
 
     @block.setter
     def block(self, _: object) -> NoReturn:
@@ -336,7 +333,7 @@ class Defaults:
 
         .. versionadded:: 20.0
         """
-        return self._protect_content
+        pass
 
     @protect_content.setter
     def protect_content(self, _: object) -> NoReturn:
@@ -351,7 +348,7 @@ class Defaults:
 
         .. versionadded:: 20.8
         """
-        return self._link_preview_options
+        pass
 
     @property
     def do_quote(self) -> bool | None:
@@ -359,4 +356,4 @@ class Defaults:
 
         .. versionadded:: 20.8
         """
-        return self._do_quote
+        pass

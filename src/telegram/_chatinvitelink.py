@@ -188,9 +188,6 @@ class ChatInviteLink(TelegramObject):
 
         self._freeze()
 
-    @property
-    def subscription_period(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._subscription_period, attribute="subscription_period")
 
     @classmethod
     def de_json(cls, data: JSONDict, bot: "Bot | None" = None) -> "ChatInviteLink":

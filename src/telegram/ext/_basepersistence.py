@@ -161,7 +161,7 @@ class BasePersistence(ABC, Generic[UD, CD, BD]):
 
         .. versionadded:: 20.0
         """
-        return self._update_interval
+        pass
 
     @update_interval.setter
     def update_interval(self, _: object) -> NoReturn:

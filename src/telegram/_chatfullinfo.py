@@ -614,15 +614,7 @@ class ChatFullInfo(_ChatBase):
             self.paid_message_star_count: int | None = paid_message_star_count
             self.first_profile_audio: Audio | None = first_profile_audio
 
-    @property
-    def slow_mode_delay(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._slow_mode_delay, attribute="slow_mode_delay")
 
-    @property
-    def message_auto_delete_time(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(
-            self._message_auto_delete_time, attribute="message_auto_delete_time"
-        )
 
     @classmethod
     def de_json(cls, data: JSONDict, bot: "Bot | None" = None) -> "ChatFullInfo":

@@ -31,19 +31,11 @@ from telegram._utils.types import SCT
 
 def parse_chat_id(chat_id: SCT[int] | None) -> frozenset[int]:
     """Accepts a chat id or collection of chat ids and returns a frozenset of chat ids."""
-    if chat_id is None:
-        return frozenset()
-    if isinstance(chat_id, int):
-        return frozenset({chat_id})
-    return frozenset(chat_id)
+    pass
 
 
 def parse_username(username: SCT[str] | None) -> frozenset[str]:
     """Accepts a username or collection of usernames and returns a frozenset of usernames.
     Strips the leading ``@`` if present.
     """
-    if username is None:
-        return frozenset()
-    if isinstance(username, str):
-        return frozenset({username.removeprefix("@")})
-    return frozenset(usr.removeprefix("@") for usr in username)
+    pass

@@ -100,13 +100,7 @@ class ChosenInlineResultHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool` | :obj:`re.match`
 
         """
-        if isinstance(update, Update) and update.chosen_inline_result:
-            if self.pattern:
-                if match := re.match(self.pattern, update.chosen_inline_result.result_id):
-                    return match
-            else:
-                return True
-        return None
+        pass
 
     def collect_additional_context(
         self,
@@ -118,6 +112,4 @@ class ChosenInlineResultHandler(BaseHandler[Update, CCT, RT]):
         """This function adds the matched regex pattern result to
         :attr:`telegram.ext.CallbackContext.matches`.
         """
-        if self.pattern:
-            check_result = cast("Match", check_result)
-            context.matches = [check_result]
+        pass

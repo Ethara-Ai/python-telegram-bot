@@ -83,11 +83,4 @@ class PaidMediaPurchasedHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        if not isinstance(update, Update) or not update.purchased_paid_media:
-            return False
-
-        if not self._user_ids and not self._usernames:
-            return True
-        if update.purchased_paid_media.from_user.id in self._user_ids:
-            return True
-        return update.purchased_paid_media.from_user.username in self._usernames
+        pass

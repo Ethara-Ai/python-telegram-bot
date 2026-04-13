@@ -167,15 +167,7 @@ class ChatJoinRequest(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().approve_chat_join_request(
-            chat_id=self.chat.id,
-            user_id=self.from_user.id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     async def decline(
         self,
@@ -199,12 +191,4 @@ class ChatJoinRequest(TelegramObject):
             :obj:`bool`: On success, :obj:`True` is returned.
 
         """
-        return await self.get_bot().decline_chat_join_request(
-            chat_id=self.chat.id,
-            user_id=self.from_user.id,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass

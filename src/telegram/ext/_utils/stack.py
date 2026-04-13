@@ -52,25 +52,6 @@ def was_called_by(frame: FrameType | None, caller: Path) -> bool:
     Returns:
         :obj:`bool`: Whether the frame was called by the specified file.
     """
-    if frame is None:
-        return False
-
-    try:
-        return _was_called_by(frame, caller)
-    except Exception as exc:
-        _LOGGER.debug(
-            "Failed to check if frame was called by `caller`. Assuming that it was not.",
-            exc_info=exc,
-        )
-        return False
+    pass
 
 
-def _was_called_by(frame: FrameType, caller: Path) -> bool:
-    # https://stackoverflow.com/a/57712700/10606962
-    if Path(frame.f_code.co_filename).resolve() == caller:
-        return True
-    while frame.f_back:
-        frame = frame.f_back
-        if Path(frame.f_code.co_filename).resolve() == caller:
-            return True
-    return False

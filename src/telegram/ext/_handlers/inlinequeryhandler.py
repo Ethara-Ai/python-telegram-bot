@@ -114,16 +114,7 @@ class InlineQueryHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool` | :obj:`re.match`
 
         """
-        if isinstance(update, Update) and update.inline_query:
-            if (self.chat_types is not None) and (
-                update.inline_query.chat_type not in self.chat_types
-            ):
-                return False
-            if self.pattern and (match := re.match(self.pattern, update.inline_query.query)):
-                return match
-            if not self.pattern:
-                return True
-        return None
+        pass
 
     def collect_additional_context(
         self,
@@ -135,6 +126,4 @@ class InlineQueryHandler(BaseHandler[Update, CCT, RT]):
         """Add the result of ``re.match(pattern, update.inline_query.query)`` to
         :attr:`CallbackContext.matches` as list with one element.
         """
-        if self.pattern:
-            check_result = cast("Match", check_result)
-            context.matches = [check_result]
+        pass

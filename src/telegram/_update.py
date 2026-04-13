@@ -504,61 +504,7 @@ class Update(TelegramObject):
             * If :attr:`poll_answer` is present, this will give :attr:`telegram.PollAnswer.user`.
 
         """
-        if self._effective_user:
-            return self._effective_user
-
-        user = None
-
-        if self.message:
-            user = self.message.from_user
-
-        elif self.edited_message:
-            user = self.edited_message.from_user
-
-        elif self.inline_query:
-            user = self.inline_query.from_user
-
-        elif self.chosen_inline_result:
-            user = self.chosen_inline_result.from_user
-
-        elif self.callback_query:
-            user = self.callback_query.from_user
-
-        elif self.shipping_query:
-            user = self.shipping_query.from_user
-
-        elif self.pre_checkout_query:
-            user = self.pre_checkout_query.from_user
-
-        elif self.poll_answer:
-            user = self.poll_answer.user
-
-        elif self.my_chat_member:
-            user = self.my_chat_member.from_user
-
-        elif self.chat_member:
-            user = self.chat_member.from_user
-
-        elif self.chat_join_request:
-            user = self.chat_join_request.from_user
-
-        elif self.message_reaction:
-            user = self.message_reaction.user
-
-        elif self.business_message:
-            user = self.business_message.from_user
-
-        elif self.edited_business_message:
-            user = self.edited_business_message.from_user
-
-        elif self.business_connection:
-            user = self.business_connection.user
-
-        elif self.purchased_paid_media:
-            user = self.purchased_paid_media.from_user
-
-        self._effective_user = user
-        return user
+        pass
 
     @property
     def effective_sender(self) -> "User | Chat | None":
@@ -591,32 +537,7 @@ class Update(TelegramObject):
 
         .. versionadded:: 21.1
         """
-        if self._effective_sender:
-            return self._effective_sender
-
-        sender: User | Chat | None = None
-
-        if message := (
-            self.message
-            or self.edited_message
-            or self.channel_post
-            or self.edited_channel_post
-            or self.business_message
-            or self.edited_business_message
-        ):
-            sender = message.sender_chat
-
-        elif self.poll_answer:
-            sender = self.poll_answer.voter_chat
-
-        elif self.message_reaction:
-            sender = self.message_reaction.actor_chat
-
-        if sender is None:
-            sender = self.effective_user
-
-        self._effective_sender = sender
-        return sender
+        pass
 
     @property
     def effective_chat(self) -> "Chat | None":
@@ -638,58 +559,7 @@ class Update(TelegramObject):
             If :attr:`message` is present, this will give :attr:`telegram.Message.chat`.
 
         """
-        if self._effective_chat:
-            return self._effective_chat
-
-        chat = None
-
-        if self.message:
-            chat = self.message.chat
-
-        elif self.edited_message:
-            chat = self.edited_message.chat
-
-        elif self.callback_query and self.callback_query.message:
-            chat = self.callback_query.message.chat
-
-        elif self.channel_post:
-            chat = self.channel_post.chat
-
-        elif self.edited_channel_post:
-            chat = self.edited_channel_post.chat
-
-        elif self.my_chat_member:
-            chat = self.my_chat_member.chat
-
-        elif self.chat_member:
-            chat = self.chat_member.chat
-
-        elif self.chat_join_request:
-            chat = self.chat_join_request.chat
-
-        elif self.chat_boost:
-            chat = self.chat_boost.chat
-
-        elif self.removed_chat_boost:
-            chat = self.removed_chat_boost.chat
-
-        elif self.message_reaction:
-            chat = self.message_reaction.chat
-
-        elif self.message_reaction_count:
-            chat = self.message_reaction_count.chat
-
-        elif self.business_message:
-            chat = self.business_message.chat
-
-        elif self.edited_business_message:
-            chat = self.edited_business_message.chat
-
-        elif self.deleted_business_messages:
-            chat = self.deleted_business_messages.chat
-
-        self._effective_chat = chat
-        return chat
+        pass
 
     @property
     def effective_message(self) -> Message | None:
@@ -712,48 +582,7 @@ class Update(TelegramObject):
             :attr:`telegram.CallbackQuery.message` is the only attribute considered by this
             property that can be an object of these types.
         """
-        if self._effective_message:
-            return self._effective_message
-
-        message: Message | None = None
-
-        if self.message:
-            message = self.message
-
-        elif self.edited_message:
-            message = self.edited_message
-
-        elif self.callback_query:
-            if (
-                isinstance(cbq_message := self.callback_query.message, Message)
-                or cbq_message is None
-            ):
-                message = cbq_message
-            else:
-                warn(
-                    (
-                        "`update.callback_query` is not `None`, but of type "
-                        f"`{cbq_message.__class__.__name__}`. This is not considered by "
-                        "`Update.effective_message`. Please manually access this attribute "
-                        "if necessary."
-                    ),
-                    stacklevel=2,
-                )
-
-        elif self.channel_post:
-            message = self.channel_post
-
-        elif self.edited_channel_post:
-            message = self.edited_channel_post
-
-        elif self.business_message:
-            message = self.business_message
-
-        elif self.edited_business_message:
-            message = self.edited_business_message
-
-        self._effective_message = message
-        return message
+        pass
 
     @classmethod
     def de_json(cls, data: JSONDict, bot: "Bot | None" = None) -> "Update":

@@ -319,10 +319,7 @@ class OwnedGiftRegular(OwnedGift):
             RuntimeError: If the owned gift has no text.
 
         """
-        if not self.text:
-            raise RuntimeError("This OwnedGiftRegular has no 'text'.")
-
-        return parse_message_entity(self.text, entity)
+        pass
 
     def parse_entities(self, types: list[str] | None = None) -> dict[MessageEntity, str]:
         """
@@ -348,10 +345,7 @@ class OwnedGiftRegular(OwnedGift):
             RuntimeError: If the owned gift has no text.
 
         """
-        if not self.text:
-            raise RuntimeError("This OwnedGiftRegular has no 'text'.")
-
-        return parse_message_entities(self.text, self.entities, types)
+        pass
 
 
 class OwnedGiftUnique(OwnedGift):

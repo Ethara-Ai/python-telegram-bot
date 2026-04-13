@@ -60,11 +60,7 @@ class RequestData:
         Returns:
             dict[:obj:`str`, :obj:`str` | :obj:`int` | list[any] | dict[any, any]]
         """
-        return {
-            param.name: param.value  # type: ignore[misc]
-            for param in self._parameters
-            if param.value is not None
-        }
+        pass
 
     @property
     def json_parameters(self) -> dict[str, str]:
@@ -79,11 +75,7 @@ class RequestData:
         Returns:
             dict[:obj:`str`, :obj:`str`]
         """
-        return {
-            param.name: param.json_value
-            for param in self._parameters
-            if param.json_value is not None
-        }
+        pass
 
     def url_encoded_parameters(self, encode_kwargs: dict[str, Any] | None = None) -> str:
         """Encodes the parameters with :func:`urllib.parse.urlencode`.
@@ -95,9 +87,7 @@ class RequestData:
         Returns:
             :obj:`str`
         """
-        if encode_kwargs:
-            return urlencode(self.json_parameters, **encode_kwargs)
-        return urlencode(self.json_parameters)
+        pass
 
     def parametrized_url(self, url: str, encode_kwargs: dict[str, Any] | None = None) -> str:
         """Shortcut for attaching the return value of :meth:`url_encoded_parameters` to the
@@ -111,8 +101,7 @@ class RequestData:
         Returns:
             :obj:`str`
         """
-        url_parameters = self.url_encoded_parameters(encode_kwargs=encode_kwargs)
-        return f"{url}?{url_parameters}"
+        pass
 
     @property
     def json_payload(self) -> bytes:
@@ -126,7 +115,7 @@ class RequestData:
         Returns:
             :obj:`bytes`
         """
-        return json.dumps(self.json_parameters).encode(TextEncoding.UTF_8)
+        pass
 
     @property
     def multipart_data(self) -> UploadFileDict:
@@ -135,9 +124,4 @@ class RequestData:
         .. versionchanged:: 21.5
             Content may now be a file handle.
         """
-        multipart_data: UploadFileDict = {}
-        for param in self._parameters:
-            m_data = param.multipart_data
-            if m_data:
-                multipart_data.update(m_data)
-        return multipart_data
+        pass

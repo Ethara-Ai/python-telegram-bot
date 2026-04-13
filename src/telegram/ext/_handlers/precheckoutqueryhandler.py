@@ -92,11 +92,4 @@ class PreCheckoutQueryHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        if isinstance(update, Update) and update.pre_checkout_query:
-            invoice_payload = update.pre_checkout_query.invoice_payload
-            if self.pattern:
-                if self.pattern.match(invoice_payload):
-                    return True
-            else:
-                return True
-        return False
+        pass

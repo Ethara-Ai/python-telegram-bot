@@ -145,36 +145,4 @@ class MessageReactionHandler(BaseHandler[Update, CCT, RT]):
             :obj:`bool`
 
         """
-        if not isinstance(update, Update):
-            return False
-
-        if not (update.message_reaction or update.message_reaction_count):
-            return False
-
-        if (
-            self.message_reaction_types == self.MESSAGE_REACTION_UPDATED
-            and update.message_reaction_count
-        ):
-            return False
-
-        if (
-            self.message_reaction_types == self.MESSAGE_REACTION_COUNT_UPDATED
-            and update.message_reaction
-        ):
-            return False
-
-        if not any((self._chat_ids, self._chat_usernames, self._user_ids, self._user_usernames)):
-            return True
-
-        # Extract chat and user IDs and usernames from the update for comparison
-        chat_id = chat.id if (chat := update.effective_chat) else None
-        chat_username = chat.username if chat else None
-        user_id = user.id if (user := update.effective_user) else None
-        user_username = user.username if user else None
-
-        return (
-            bool(self._chat_ids and (chat_id in self._chat_ids))
-            or bool(self._chat_usernames and (chat_username in self._chat_usernames))
-            or bool(self._user_ids and (user_id in self._user_ids))
-            or bool(self._user_usernames and (user_username in self._user_usernames))
-        )
+        pass

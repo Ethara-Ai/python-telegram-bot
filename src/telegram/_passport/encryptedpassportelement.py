@@ -231,48 +231,4 @@ class EncryptedPassportElement(TelegramObject):
             :class:`telegram.EncryptedPassportElement`:
 
         """
-
-        if data["type"] not in ("phone_number", "email"):
-            secure_data = getattr(credentials.secure_data, data["type"])
-
-            if secure_data.data is not None:
-                # If not already decrypted
-                if not isinstance(data["data"], dict):
-                    data["data"] = decrypt_json(
-                        b64decode(secure_data.data.secret),
-                        b64decode(secure_data.data.hash),
-                        b64decode(data["data"]),
-                    )
-                if data["type"] == "personal_details":
-                    data["data"] = PersonalDetails.de_json(data["data"], bot=bot)
-                elif data["type"] in (
-                    "passport",
-                    "internal_passport",
-                    "driver_license",
-                    "identity_card",
-                ):
-                    data["data"] = IdDocumentData.de_json(data["data"], bot=bot)
-                elif data["type"] == "address":
-                    data["data"] = ResidentialAddress.de_json(data["data"], bot=bot)
-
-            data["files"] = (
-                de_list_decrypted_optional(data.get("files"), PassportFile, bot, secure_data.files)
-                or None
-            )
-            data["front_side"] = de_json_decrypted_optional(
-                data.get("front_side"), PassportFile, bot, secure_data.front_side
-            )
-            data["reverse_side"] = de_json_decrypted_optional(
-                data.get("reverse_side"), PassportFile, bot, secure_data.reverse_side
-            )
-            data["selfie"] = de_json_decrypted_optional(
-                data.get("selfie"), PassportFile, bot, secure_data.selfie
-            )
-            data["translation"] = (
-                de_list_decrypted_optional(
-                    data.get("translation"), PassportFile, bot, secure_data.translation
-                )
-                or None
-            )
-
-        return super().de_json(data=data, bot=bot)
+        pass

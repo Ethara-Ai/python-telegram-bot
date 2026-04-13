@@ -49,7 +49,7 @@ def parse_sequence_arg(arg: Sequence[T] | None) -> tuple[T, ...]:
     Returns:
         :obj:`Tuple`: The sequence converted to a tuple or an empty tuple.
     """
-    return tuple(arg) if arg else ()
+    pass
 
 
 @overload
@@ -73,11 +73,7 @@ def to_timedelta(arg: int | float | dtm.timedelta | None) -> dtm.timedelta | Non
     Returns:
         :obj:`timedelta`: The time period converted to a timedelta object or :obj:`None`.
     """
-    if arg is None:
-        return None
-    if isinstance(arg, int | float):
-        return dtm.timedelta(seconds=arg)
-    return arg
+    pass
 
 
 def parse_lpo_and_dwpp(
@@ -141,10 +137,7 @@ def de_json_decrypted_optional(
     credentials: list["FileCredentials"],
 ) -> TeleCrypto_co | None:
     """Wrapper around TO.de_json_decrypted that returns None if data is None."""
-    if data is None:
-        return None
-
-    return cls.de_json_decrypted(data, bot, credentials)
+    pass
 
 
 def de_list_optional(
@@ -164,7 +157,4 @@ def de_list_decrypted_optional(
     credentials: list["FileCredentials"],
 ) -> tuple[TeleCrypto_co, ...]:
     """Wrapper around TO.de_list_decrypted that returns an empty list if data is None."""
-    if data is None:
-        return ()
-
-    return cls.de_list_decrypted(data, bot, credentials)
+    pass

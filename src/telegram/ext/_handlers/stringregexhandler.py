@@ -97,9 +97,7 @@ class StringRegexHandler(BaseHandler[str, CCT, RT]):
             :obj:`None` | :obj:`re.match`
 
         """
-        if isinstance(update, str) and (match := re.match(self.pattern, update)):
-            return match
-        return None
+        pass
 
     def collect_additional_context(
         self,
@@ -111,5 +109,4 @@ class StringRegexHandler(BaseHandler[str, CCT, RT]):
         """Add the result of ``re.match(pattern, update)`` to :attr:`CallbackContext.matches` as
         list with one element.
         """
-        if self.pattern and check_result:
-            context.matches = [check_result]
+        pass

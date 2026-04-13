@@ -33,12 +33,6 @@ class Version(NamedTuple):
     releaselevel: str  # Literal['alpha', 'beta', 'candidate', 'final']
     serial: int
 
-    def _rl_shorthand(self) -> str:
-        return {
-            "alpha": "a",
-            "beta": "b",
-            "candidate": "rc",
-        }[self.releaselevel]
 
     def __str__(self) -> str:
         version = f"{self.major}.{self.minor}"

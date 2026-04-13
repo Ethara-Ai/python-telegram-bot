@@ -40,10 +40,7 @@ def parse_message_entity(text: str, entity: MessageEntity) -> str:
     Returns:
         :obj:`str`: The text of the given entity.
     """
-    entity_text = text.encode(TextEncoding.UTF_16_LE)
-    entity_text = entity_text[entity.offset * 2 : (entity.offset + entity.length) * 2]
-
-    return entity_text.decode(TextEncoding.UTF_16_LE)
+    pass
 
 
 def parse_message_entities(
@@ -65,9 +62,4 @@ def parse_message_entities(
         dict[:class:`telegram.MessageEntity`, :obj:`str`]: A dictionary of entities mapped to
         the text that belongs to them, calculated based on UTF-16 codepoints.
     """
-    if types is None:
-        types = MessageEntity.ALL_TYPES
-
-    return {
-        entity: parse_message_entity(text, entity) for entity in entities if entity.type in types
-    }
+    pass

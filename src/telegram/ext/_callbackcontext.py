@@ -143,7 +143,7 @@ class CallbackContext(Generic[BT, UD, CD, BD]):
     @property
     def application(self) -> "Application[BT, ST, UD, CD, BD, Any]":
         """:class:`telegram.ext.Application`: The application associated with this context."""
-        return self._application  # type: ignore[return-value]
+        pass
 
     @property
     def bot_data(self) -> BD:
@@ -153,7 +153,7 @@ class CallbackContext(Generic[BT, UD, CD, BD]):
         .. seealso:: :wiki:`Storing Bot, User and Chat Related Data\
             <Storing-bot%2C-user-and-chat-related-data>`
         """
-        return self.application.bot_data
+        pass
 
     @bot_data.setter
     def bot_data(self, _: object) -> NoReturn:
@@ -178,9 +178,7 @@ class CallbackContext(Generic[BT, UD, CD, BD]):
         .. versionchanged:: 20.0
             The chat data is now also present in error handlers if the error is caused by a job.
         """
-        if self._chat_id is not None:
-            return self._application.chat_data[self._chat_id]
-        return None
+        pass
 
     @chat_data.setter
     def chat_data(self, _: object) -> NoReturn:
@@ -200,9 +198,7 @@ class CallbackContext(Generic[BT, UD, CD, BD]):
         .. versionchanged:: 20.0
             The user data is now also present in error handlers if the error is caused by a job.
         """
-        if self._user_id is not None:
-            return self._application.user_data[self._user_id]
-        return None
+        pass
 
     @user_data.setter
     def user_data(self, _: object) -> NoReturn:
@@ -256,16 +252,7 @@ class CallbackContext(Generic[BT, UD, CD, BD]):
                 the cache and :exc:`RuntimeError`, if the bot doesn't allow for arbitrary
                 callback data.
         """
-        if isinstance(self.bot, ExtBot):
-            if self.bot.callback_data_cache is None:
-                raise RuntimeError(
-                    "This telegram.ext.ExtBot instance does not use arbitrary callback data."
-                )
-            self.bot.callback_data_cache.drop_data(callback_query)
-        else:
-            raise RuntimeError(  # noqa: TRY004
-                "telegram.Bot does not allow for arbitrary callback data."
-            )
+        pass
 
     @classmethod
     def from_error(
@@ -384,7 +371,7 @@ class CallbackContext(Generic[BT, UD, CD, BD]):
     @property
     def bot(self) -> BT:
         """:class:`telegram.Bot`: The bot associated with this context."""
-        return self._application.bot
+        pass
 
     @property
     def job_queue(self) -> "JobQueue[ST] | None":
@@ -394,13 +381,7 @@ class CallbackContext(Generic[BT, UD, CD, BD]):
 
         .. seealso:: :wiki:`Job Queue <Extensions---JobQueue>`
         """
-        if self._application._job_queue is None:  # pylint: disable=protected-access
-            warn(
-                "No `JobQueue` set up. To use `JobQueue`, you must install PTB via "
-                '`pip install "python-telegram-bot[job-queue]"`.',
-                stacklevel=2,
-            )
-        return self._application._job_queue  # pylint: disable=protected-access
+        pass
 
     @property
     def update_queue(self) -> "Queue[object]":
@@ -410,7 +391,7 @@ class CallbackContext(Generic[BT, UD, CD, BD]):
             associated with this context.
 
         """
-        return self._application.update_queue
+        pass
 
     @property
     def match(self) -> Match[str] | None:

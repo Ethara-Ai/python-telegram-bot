@@ -104,7 +104,7 @@ class _KeyboardData:
         """Gives a tuple representation consisting of the keyboard uuid, the access time and the
         button data.
         """
-        return self.keyboard_uuid, self.access_time, self.button_data
+        pass
 
 
 class CallbackDataCache:
@@ -189,13 +189,7 @@ class CallbackDataCache:
             Data to load, as returned by \
             :meth:`telegram.ext.BasePersistence.get_callback_data`.
         """
-        keyboard_data, callback_queries = persistent_data
-        for key, value in callback_queries.items():
-            self._callback_queries[key] = value
-        for uuid, access_time, data in keyboard_data:
-            self._keyboard_data[uuid] = _KeyboardData(
-                keyboard_uuid=uuid, access_time=access_time, button_data=data
-            )
+        pass
 
     @property
     def maxsize(self) -> int:
@@ -204,7 +198,7 @@ class CallbackDataCache:
         .. versionchanged:: 20.0
            This property is now read-only.
         """
-        return self._maxsize
+        pass
 
     @property
     def persistence_data(self) -> CDCData:
@@ -212,12 +206,7 @@ class CallbackDataCache:
         dict[:obj:`str`, :obj:`str`]]: The data that needs to be persisted to allow
         caching callback data across bot reboots.
         """
-        # While building a list/dict from the LRUCaches has linear runtime (in the number of
-        # entries), the runtime is bounded by maxsize and it has the big upside of not throwing a
-        # highly customized data structure at users trying to implement a custom persistence class
-        return [data.to_tuple() for data in self._keyboard_data.values()], dict(
-            self._callback_queries.items()
-        )
+        pass
 
     def process_keyboard(self, reply_markup: InlineKeyboardMarkup) -> InlineKeyboardMarkup:
         """Registers the reply markup to the cache. If any of the buttons have
@@ -423,15 +412,8 @@ class CallbackDataCache:
         Raises:
             KeyError: If the callback query can not be found in the cache
         """
-        try:
-            keyboard_uuid = self._callback_queries.pop(callback_query.id)
-            self.__drop_keyboard(keyboard_uuid)
-        except KeyError as exc:
-            raise KeyError("CallbackQuery was not found in cache.") from exc
+        pass
 
-    def __drop_keyboard(self, keyboard_uuid: str) -> None:
-        with contextlib.suppress(KeyError):
-            self._keyboard_data.pop(keyboard_uuid)
 
     def clear_callback_data(self, time_cutoff: float | dtm.datetime | None = None) -> None:
         """Clears the stored callback data.
@@ -442,28 +424,9 @@ class CallbackDataCache:
                 |tz-naive-dtms|
 
         """
-        self.__clear(self._keyboard_data, time_cutoff=time_cutoff)
+        pass
 
     def clear_callback_queries(self) -> None:
         """Clears the stored callback query IDs."""
-        self.__clear(self._callback_queries)
+        pass
 
-    def __clear(
-        self, mapping: MutableMapping, time_cutoff: float | dtm.datetime | None = None
-    ) -> None:
-        if not time_cutoff:
-            mapping.clear()
-            return
-
-        if isinstance(time_cutoff, dtm.datetime):
-            effective_cutoff = to_float_timestamp(
-                time_cutoff, tzinfo=self.bot.defaults.tzinfo if self.bot.defaults else None
-            )
-        else:
-            effective_cutoff = time_cutoff
-
-        # We need a list instead of a generator here, as the list doesn't change it's size
-        # during the iteration
-        to_drop = [key for key, data in mapping.items() if data.access_time < effective_cutoff]
-        for key in to_drop:
-            mapping.pop(key)

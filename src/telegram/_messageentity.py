@@ -244,30 +244,7 @@ class MessageEntity(TelegramObject):
             Sequence[:class:`telegram.MessageEntity`]: Sequence of entities
             with offset and length calculated in UTF-16 encoding
         """
-        # get sorted positions
-        positions = sorted(itertools.chain(*((x.offset, x.offset + x.length) for x in entities)))
-        accumulated_length = 0
-        # calculate the length of each slice text[:position] in utf-16 accordingly,
-        # store the position translations
-        position_translation: dict[int, int] = {}
-        for i, position in enumerate(positions):
-            last_position = positions[i - 1] if i > 0 else 0
-            text_slice = text[last_position:position]
-            accumulated_length += len(text_slice.encode(TextEncoding.UTF_16_LE)) // 2
-            position_translation[position] = accumulated_length
-        # get the final output entities
-        out = []
-        for entity in entities:
-            translated_positions = position_translation[entity.offset]
-            translated_length = (
-                position_translation[entity.offset + entity.length] - translated_positions
-            )
-            new_entity = copy.copy(entity)
-            with new_entity._unfrozen():
-                new_entity.offset = translated_positions
-                new_entity.length = translated_length
-            out.append(new_entity)
-        return out
+        pass
 
     @staticmethod
     def shift_entities(by: str | int, entities: _SEM) -> _SEM:
@@ -322,15 +299,7 @@ class MessageEntity(TelegramObject):
         Returns:
             Sequence[:class:`telegram.MessageEntity`]: Sequence of entities with the offset shifted
         """
-        effective_shift = by if isinstance(by, int) else len(by.encode("utf-16-le")) // 2
-
-        out = []
-        for entity in entities:
-            new_entity = copy.copy(entity)
-            with new_entity._unfrozen():
-                new_entity.offset += effective_shift
-            out.append(new_entity)
-        return out
+        pass
 
     @classmethod
     def concatenate(
@@ -393,18 +362,7 @@ class MessageEntity(TelegramObject):
             tuple[:obj:`str`, Sequence[:class:`telegram.MessageEntity`]]: The concatenated text
             and its entities
         """
-        output_text = ""
-        output_entities: list[MessageEntity] = []
-        for arg in args:
-            text, entities = arg[0], arg[1]
-
-            if len(arg) > 2 and arg[2] is True:
-                entities = cls.adjust_message_entities_to_utf_16(text, entities)
-
-            output_entities.extend(cls.shift_entities(output_text, entities))
-            output_text += text
-
-        return output_text, output_entities
+        pass
 
     ALL_TYPES: Final[list[str]] = list(constants.MessageEntityType)
     """list[:obj:`str`]: A list of all available message entity types."""

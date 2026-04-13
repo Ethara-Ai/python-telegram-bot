@@ -186,7 +186,7 @@ class ChatShared(TelegramObject):
 
         .. versionadded:: 22.4
         """
-        return get_link(self)
+        pass
 
 
 class SharedUser(TelegramObject):
@@ -262,7 +262,7 @@ class SharedUser(TelegramObject):
 
         .. versionadded:: 22.4
         """
-        return get_name(self)
+        pass
 
     @property
     def full_name(self) -> str | None:
@@ -271,7 +271,7 @@ class SharedUser(TelegramObject):
 
         .. versionadded:: 22.4
         """
-        return get_full_name(self)
+        pass
 
     @property
     def link(self) -> str | None:
@@ -280,7 +280,7 @@ class SharedUser(TelegramObject):
 
         .. versionadded:: 22.4
         """
-        return get_link(self)
+        pass
 
     @classmethod
     def de_json(cls, data: JSONDict, bot: "Bot | None" = None) -> "SharedUser":

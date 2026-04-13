@@ -123,9 +123,6 @@ class InputLocationMessageContent(InputMessageContent):
 
             self._id_attrs = (self.latitude, self.longitude)
 
-    @property
-    def live_period(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._live_period, attribute="live_period")
 
     HORIZONTAL_ACCURACY: Final[int] = constants.LocationLimit.HORIZONTAL_ACCURACY
     """:const:`telegram.constants.LocationLimit.HORIZONTAL_ACCURACY`

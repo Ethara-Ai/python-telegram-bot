@@ -56,9 +56,7 @@ def get_name(userlike: TeleUserLike | TeleUserLikeOptional) -> str | None:
     """Returns ``username`` prefixed with "@". If  ``username`` is not available, calls
     :func:`get_full_name` below`.
     """
-    if userlike.username:
-        return f"@{userlike.username}"
-    return get_full_name(userlike=userlike)
+    pass
 
 
 @overload
@@ -73,11 +71,7 @@ def get_full_name(userlike: TeleUserLike | TeleUserLikeOptional) -> str | None:
     ``first_name`` followed by (if available) `UserLike.last_name`. Otherwise,
     :obj:`None` is returned.
     """
-    if not userlike.first_name:
-        return None
-    if userlike.last_name:
-        return f"{userlike.first_name} {userlike.last_name}"
-    return userlike.first_name
+    pass
 
 
 # We isolate these TypeVars to accomodiate telegram objects with ``username``
@@ -104,6 +98,4 @@ def get_link(linkable: TeleLinkableOptional) -> str | None: ...
 
 def get_link(linkable: TeleLinkable | TeleLinkableOptional) -> str | None:
     """If ``username`` is available, returns a t.me link of the user/chat."""
-    if linkable.username:
-        return f"https://t.me/{linkable.username}"
-    return None
+    pass

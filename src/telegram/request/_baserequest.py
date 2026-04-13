@@ -247,14 +247,7 @@ class BaseRequest(
             :obj:`bytes`: The files contents.
 
         """
-        return await self._request_wrapper(
-            url=url,
-            method="GET",
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-        )
+        pass
 
     async def _request_wrapper(
         self,

@@ -173,38 +173,32 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
     @property
     def user_data(self) -> dict[int, dict[Any, Any]] | None:
         """:obj:`dict`: The user_data as a dict."""
-        return self._user_data
+        pass
 
     @property
     def user_data_json(self) -> str:
         """:obj:`str`: The user_data serialized as a JSON-string."""
-        if self._user_data_json:
-            return self._user_data_json
-        return json.dumps(self.user_data)
+        pass
 
     @property
     def chat_data(self) -> dict[int, dict[Any, Any]] | None:
         """:obj:`dict`: The chat_data as a dict."""
-        return self._chat_data
+        pass
 
     @property
     def chat_data_json(self) -> str:
         """:obj:`str`: The chat_data serialized as a JSON-string."""
-        if self._chat_data_json:
-            return self._chat_data_json
-        return json.dumps(self.chat_data)
+        pass
 
     @property
     def bot_data(self) -> dict[Any, Any] | None:
         """:obj:`dict`: The bot_data as a dict."""
-        return self._bot_data
+        pass
 
     @property
     def bot_data_json(self) -> str:
         """:obj:`str`: The bot_data serialized as a JSON-string."""
-        if self._bot_data_json:
-            return self._bot_data_json
-        return json.dumps(self.bot_data)
+        pass
 
     @property
     def callback_data(self) -> CDCData | None:
@@ -213,7 +207,7 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
 
         .. versionadded:: 13.6
         """
-        return self._callback_data
+        pass
 
     @property
     def callback_data_json(self) -> str:
@@ -221,23 +215,17 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
 
         .. versionadded:: 13.6
         """
-        if self._callback_data_json:
-            return self._callback_data_json
-        return json.dumps(self.callback_data)
+        pass
 
     @property
     def conversations(self) -> dict[str, ConversationDict] | None:
         """:obj:`dict`: The conversations as a dict."""
-        return self._conversations
+        pass
 
     @property
     def conversations_json(self) -> str:
         """:obj:`str`: The conversations serialized as a JSON-string."""
-        if self._conversations_json:
-            return self._conversations_json
-        if self.conversations:
-            return self._encode_conversations_to_json(self.conversations)
-        return json.dumps(self.conversations)
+        pass
 
     async def get_user_data(self) -> dict[int, dict[object, object]]:
         """Returns the user_data created from the ``user_data_json`` or an empty :obj:`dict`.
@@ -245,9 +233,7 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
         Returns:
             :obj:`dict`: The restored user data.
         """
-        if self.user_data is None:
-            self._user_data = {}
-        return deepcopy(self.user_data)  # type: ignore[arg-type]
+        pass
 
     async def get_chat_data(self) -> dict[int, dict[object, object]]:
         """Returns the chat_data created from the ``chat_data_json`` or an empty :obj:`dict`.
@@ -255,9 +241,7 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
         Returns:
             :obj:`dict`: The restored chat data.
         """
-        if self.chat_data is None:
-            self._chat_data = {}
-        return deepcopy(self.chat_data)  # type: ignore[arg-type]
+        pass
 
     async def get_bot_data(self) -> dict[object, object]:
         """Returns the bot_data created from the ``bot_data_json`` or an empty :obj:`dict`.
@@ -265,9 +249,7 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
         Returns:
             :obj:`dict`: The restored bot data.
         """
-        if self.bot_data is None:
-            self._bot_data = {}
-        return deepcopy(self.bot_data)  # type: ignore[arg-type]
+        pass
 
     async def get_callback_data(self) -> CDCData | None:
         """Returns the callback_data created from the ``callback_data_json`` or :obj:`None`.
@@ -279,10 +261,7 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
                 dict[:obj:`str`, :obj:`str`]]: The restored metadata or :obj:`None`, \
                 if no data was stored.
         """
-        if self.callback_data is None:
-            self._callback_data = None
-            return None
-        return deepcopy(self.callback_data)
+        pass
 
     async def get_conversations(self, name: str) -> ConversationDict:
         """Returns the conversations created from the ``conversations_json`` or an empty
@@ -291,9 +270,7 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
         Returns:
             :obj:`dict`: The restored conversations data.
         """
-        if self.conversations is None:
-            self._conversations = {}
-        return self.conversations.get(name, {}).copy()  # type: ignore[union-attr]
+        pass
 
     async def update_conversation(
         self, name: str, key: ConversationKey, new_state: object | None
@@ -431,12 +408,7 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
         Returns:
             :obj:`str`: The JSON-serialized conversations dict
         """
-        tmp: dict[str, JSONDict] = {}
-        for handler, states in conversations.items():
-            tmp[handler] = {}
-            for key, state in states.items():
-                tmp[handler][json.dumps(key)] = state
-        return json.dumps(tmp)
+        pass
 
     @staticmethod
     def _decode_conversations_from_json(json_string: str) -> dict[str, ConversationDict]:
@@ -449,13 +421,7 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
         Returns:
             :obj:`dict`: The conversations dict after decoding
         """
-        tmp = json.loads(json_string)
-        conversations: dict[str, ConversationDict] = {}
-        for handler, states in tmp.items():
-            conversations[handler] = {}
-            for key, state in states.items():
-                conversations[handler][tuple(json.loads(key))] = state
-        return conversations
+        pass
 
     @staticmethod
     def _decode_user_chat_data_from_json(data: str) -> dict[int, dict[object, object]]:
@@ -468,15 +434,4 @@ class DictPersistence(BasePersistence[dict[Any, Any], dict[Any, Any], dict[Any, 
         Returns:
             :obj:`dict`: The user/chat_data defaultdict after decoding
         """
-        tmp: dict[int, dict[object, object]] = {}
-        decoded_data = json.loads(data)
-        for user, user_data in decoded_data.items():
-            int_user_id = int(user)
-            tmp[int_user_id] = {}
-            for key, value in user_data.items():
-                try:
-                    _id = int(key)
-                except ValueError:
-                    _id = key
-                tmp[int_user_id][_id] = value
-        return tmp
+        pass

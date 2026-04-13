@@ -234,7 +234,7 @@ class ChatPermissions(TelegramObject):
         .. versionadded:: 20.0
 
         """
-        return cls(*(True,) * len(cls.__slots__))
+        pass
 
     @classmethod
     def no_permissions(cls) -> "ChatPermissions":
@@ -244,7 +244,7 @@ class ChatPermissions(TelegramObject):
 
         .. versionadded:: 20.0
         """
-        return cls(*(False,) * len(cls.__slots__))
+        pass
 
     @classmethod
     def de_json(cls, data: JSONDict, bot: "Bot | None" = None) -> "ChatPermissions":

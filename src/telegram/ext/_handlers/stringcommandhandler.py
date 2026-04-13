@@ -89,11 +89,7 @@ class StringCommandHandler(BaseHandler[str, CCT, RT]):
             list[:obj:`str`]: List containing the text command split on whitespace.
 
         """
-        if isinstance(update, str) and update.startswith("/"):
-            args = update[1:].split(" ")
-            if args[0] == self.command:
-                return args[1:]
-        return None
+        pass
 
     def collect_additional_context(
         self,
@@ -105,4 +101,4 @@ class StringCommandHandler(BaseHandler[str, CCT, RT]):
         """Add text after the command to :attr:`CallbackContext.args` as list, split on single
         whitespaces.
         """
-        context.args = check_result
+        pass

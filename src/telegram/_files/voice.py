@@ -86,8 +86,3 @@ class Voice(_BaseMedium):
             # Optional
             self.mime_type: str | None = mime_type
 
-    @property
-    def duration(self) -> int | dtm.timedelta:
-        return get_timedelta_value(  # type: ignore[return-value]
-            self._duration, attribute="duration"
-        )

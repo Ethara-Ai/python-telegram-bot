@@ -140,6 +140,3 @@ class InlineQueryResultAudio(InlineQueryResult):
             self.reply_markup: InlineKeyboardMarkup | None = reply_markup
             self.input_message_content: InputMessageContent | None = input_message_content
 
-    @property
-    def audio_duration(self) -> int | dtm.timedelta | None:
-        return get_timedelta_value(self._audio_duration, attribute="audio_duration")

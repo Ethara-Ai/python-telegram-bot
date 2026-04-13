@@ -186,22 +186,7 @@ class InlineQuery(TelegramObject):
             ValueError: If both :paramref:`~telegram.Bot.answer_inline_query.current_offset` and
                 :paramref:`auto_pagination` are supplied.
         """
-        if current_offset and auto_pagination:
-            raise ValueError("current_offset and auto_pagination are mutually exclusive!")
-        return await self.get_bot().answer_inline_query(
-            inline_query_id=self.id,
-            current_offset=self.offset if auto_pagination else current_offset,
-            results=results,
-            cache_time=cache_time,
-            is_personal=is_personal,
-            next_offset=next_offset,
-            button=button,
-            read_timeout=read_timeout,
-            write_timeout=write_timeout,
-            connect_timeout=connect_timeout,
-            pool_timeout=pool_timeout,
-            api_kwargs=api_kwargs,
-        )
+        pass
 
     MAX_RESULTS: Final[int] = constants.InlineQueryLimit.RESULTS
     """:const:`telegram.constants.InlineQueryLimit.RESULTS`

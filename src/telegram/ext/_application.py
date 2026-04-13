@@ -402,7 +402,7 @@ class Application(
         .. seealso::
             :meth:`start`, :meth:`stop`
         """
-        return self._running
+        pass
 
     @property
     def concurrent_updates(self) -> int:
@@ -415,7 +415,7 @@ class Application(
 
         .. seealso:: :wiki:`Concurrency`
         """
-        return self._update_processor.max_concurrent_updates
+        pass
 
     @property
     def job_queue(self) -> "JobQueue[CCT] | None":
@@ -425,13 +425,7 @@ class Application(
 
         .. seealso:: :wiki:`Job Queue <Extensions---JobQueue>`
         """
-        if self._job_queue is None:
-            warn(
-                "No `JobQueue` set up. To use `JobQueue`, you must install PTB via "
-                '`pip install "python-telegram-bot[job-queue]"`.',
-                stacklevel=2,
-            )
-        return self._job_queue
+        pass
 
     @property
     def update_processor(self) -> "BaseUpdateProcessor":
@@ -442,7 +436,7 @@ class Application(
 
         .. versionadded:: 20.4
         """
-        return self._update_processor
+        pass
 
     @staticmethod
     def _raise_system_exit() -> NoReturn:
@@ -454,18 +448,8 @@ class Application(
 
         .. versionadded:: 20.0
         """
-        # Unfortunately this needs to be here due to cyclical imports
-        from telegram.ext import (  # pylint: disable=import-outside-toplevel  # noqa: PLC0415
-            ApplicationBuilder,
-        )
+        pass
 
-        return ApplicationBuilder()
-
-    def _check_initialized(self) -> None:
-        if not self._initialized:
-            raise RuntimeError(
-                "This Application was not initialized via `Application.initialize`!"
-            )
 
     async def initialize(self) -> None:
         """Initializes the Application by initializing:
@@ -482,38 +466,8 @@ class Application(
         .. seealso::
             :meth:`shutdown`
         """
-        if self._initialized:
-            _LOGGER.debug("This Application is already initialized.")
-            return
+        pass
 
-        await self.bot.initialize()
-        await self._update_processor.initialize()
-
-        if self.updater:
-            await self.updater.initialize()
-
-        if not self.persistence:
-            self._initialized = True
-            return
-
-        await self._initialize_persistence()
-
-        # Unfortunately due to circular imports this has to be here
-        # pylint: disable=import-outside-toplevel
-        from telegram.ext._handlers.conversationhandler import ConversationHandler  # noqa: PLC0415
-
-        # Initialize the persistent conversation handlers with the stored states
-        for handler in itertools.chain.from_iterable(self.handlers.values()):
-            if isinstance(handler, ConversationHandler) and handler.persistent and handler.name:
-                await self._add_ch_to_persistence(handler)
-
-        self._initialized = True
-        self.__stop_running_marker.clear()
-
-    async def _add_ch_to_persistence(self, handler: "ConversationHandler") -> None:
-        self._conversation_handler_conversations.update(
-            await handler._initialize_persistence(self)  # pylint: disable=protected-access
-        )
 
     async def shutdown(self) -> None:
         """Shuts down the Application by shutting down:
@@ -556,32 +510,7 @@ class Application(
 
     async def _initialize_persistence(self) -> None:
         """This method basically just loads all the data by awaiting the BP methods"""
-        if not self.persistence:
-            return
-
-        if self.persistence.store_data.user_data:
-            self._user_data.update(await self.persistence.get_user_data())
-        if self.persistence.store_data.chat_data:
-            self._chat_data.update(await self.persistence.get_chat_data())
-        if self.persistence.store_data.bot_data:
-            self.bot_data = await self.persistence.get_bot_data()
-            if not isinstance(self.bot_data, self.context_types.bot_data):
-                raise ValueError(
-                    f"bot_data must be of type {self.context_types.bot_data.__name__}"
-                )
-
-        # Mypy doesn't know that persistence.set_bot (see above) already checks that
-        # self.bot is an instance of ExtBot if callback_data should be stored ...
-        if self.persistence.store_data.callback_data and (
-            self.bot.callback_data_cache is not None  # type: ignore[attr-defined]
-        ):
-            persistent_data = await self.persistence.get_callback_data()
-            if persistent_data is not None:
-                if not isinstance(persistent_data, tuple) or len(persistent_data) != 2:
-                    raise ValueError("callback_data must be a tuple of length 2")
-                self.bot.callback_data_cache.load_persistence_data(  # type: ignore[attr-defined]
-                    persistent_data
-                )
+        pass
 
     async def start(self) -> None:
         """Starts
@@ -608,33 +537,7 @@ class Application(
         Raises:
             :exc:`RuntimeError`: If the application is already running or was not initialized.
         """
-        if self.running:
-            raise RuntimeError("This Application is already running!")
-        self._check_initialized()
-
-        self._running = True
-        self.__update_persistence_event.clear()
-
-        try:
-            if self.persistence:
-                self.__update_persistence_task = asyncio.create_task(
-                    self._persistence_updater(),
-                    name=f"Application:{self.bot.id}:persistence_updater",
-                )
-                _LOGGER.debug("Loop for updating persistence started")
-
-            if self._job_queue:
-                await self._job_queue.start()  # type: ignore[union-attr]
-                _LOGGER.debug("JobQueue started")
-
-            self.__update_fetcher_task = asyncio.create_task(
-                self._update_fetcher(), name=f"Application:{self.bot.id}:update_fetcher"
-            )
-            _LOGGER.info("Application started")
-
-        except Exception:
-            self._running = False
-            raise
+        pass
 
     async def stop(self) -> None:
         """Stops the process after processing any pending updates or tasks created by
@@ -828,27 +731,7 @@ class Application(
         Raises:
             :exc:`RuntimeError`: If the Application does not have an :class:`telegram.ext.Updater`.
         """
-        if not self.updater:
-            raise RuntimeError(
-                "Application.run_polling is only available if the application has an Updater."
-            )
-
-        def error_callback(exc: TelegramError) -> None:
-            self.create_task(self.process_error(error=exc, update=None))
-
-        return self.__run(
-            updater_coroutine=self.updater.start_polling(
-                poll_interval=poll_interval,
-                timeout=timeout,
-                bootstrap_retries=bootstrap_retries,
-                allowed_updates=allowed_updates,
-                drop_pending_updates=drop_pending_updates,
-                error_callback=error_callback,  # if there is an error in fetching updates
-            ),
-            stop_signals=stop_signals,
-            bootstrap_retries=bootstrap_retries,
-            close_loop=close_loop,
-        )
+        pass
 
     def run_webhook(
         self,
@@ -984,104 +867,9 @@ class Application(
                 .. versionchanged:: 21.1
                     Added support to pass a socket instance itself.
         """
-        if not self.updater:
-            raise RuntimeError(
-                "Application.run_webhook is only available if the application has an Updater."
-            )
+        pass
 
-        return self.__run(
-            updater_coroutine=self.updater.start_webhook(
-                listen=listen,
-                port=port,
-                url_path=url_path,
-                cert=cert,
-                key=key,
-                bootstrap_retries=bootstrap_retries,
-                drop_pending_updates=drop_pending_updates,
-                webhook_url=webhook_url,
-                allowed_updates=allowed_updates,
-                ip_address=ip_address,
-                max_connections=max_connections,
-                secret_token=secret_token,
-                unix=unix,
-            ),
-            stop_signals=stop_signals,
-            bootstrap_retries=bootstrap_retries,
-            close_loop=close_loop,
-        )
 
-    async def _bootstrap_initialize(self, max_retries: int) -> None:
-        await network_retry_loop(
-            action_cb=self.initialize,
-            description="Bootstrap Initialize Application",
-            max_retries=max_retries,
-            interval=1,
-        )
-
-    def __run(
-        self,
-        updater_coroutine: Coroutine,
-        stop_signals: ODVInput[Sequence[int]],
-        bootstrap_retries: int,
-        close_loop: bool = True,
-    ) -> None:
-        # Try to get the running event loop first, and if there isn't one, create a new one.
-        # This handles the Python 3.14+ behavior where get_event_loop() raises RuntimeError
-        # when there's no current event loop in the main thread.
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            # No running event loop, create and set a new one
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        if stop_signals is DEFAULT_NONE and platform.system() != "Windows":
-            stop_signals = (signal.SIGINT, signal.SIGTERM, signal.SIGABRT)
-
-        try:
-            if not isinstance(stop_signals, DefaultValue):
-                for sig in stop_signals or []:
-                    loop.add_signal_handler(sig, self._raise_system_exit)
-        except NotImplementedError as exc:
-            warn(
-                f"Could not add signal handlers for the stop signals {stop_signals} due to "
-                f"exception `{exc!r}`. If your event loop does not implement `add_signal_handler`,"
-                " please pass `stop_signals=None`.",
-                stacklevel=3,
-            )
-
-        try:
-            loop.run_until_complete(self._bootstrap_initialize(max_retries=bootstrap_retries))
-            if self.post_init:
-                loop.run_until_complete(self.post_init(self))
-            if self.__stop_running_marker.is_set():
-                _LOGGER.info("Application received stop signal via `stop_running`. Shutting down.")
-                return
-            loop.run_until_complete(updater_coroutine)  # one of updater.start_webhook/polling
-            loop.run_until_complete(self.start())
-            loop.run_forever()
-        except (KeyboardInterrupt, SystemExit):
-            _LOGGER.debug("Application received stop signal. Shutting down.")
-        finally:
-            # We arrive here either by catching the exceptions above or if the loop gets stopped
-            # In case the coroutine wasn't awaited, we don't need to bother the user with a warning
-            updater_coroutine.close()
-
-            try:
-                # Mypy doesn't know that we already check if updater is None
-                if self.updater.running:  # type: ignore[union-attr]
-                    loop.run_until_complete(self.updater.stop())  # type: ignore[union-attr]
-                if self.running:
-                    loop.run_until_complete(self.stop())
-                    # post_stop should be called only if stop was called!
-                    if self.post_stop:
-                        loop.run_until_complete(self.post_stop(self))
-                loop.run_until_complete(self.shutdown())
-                if self.post_shutdown:
-                    loop.run_until_complete(self.post_shutdown(self))
-            finally:
-                if close_loop:
-                    loop.close()
 
     def create_task(
         self,
@@ -1153,12 +941,6 @@ class Application(
 
         return task
 
-    def __create_task_done_callback(self, task: asyncio.Task) -> None:
-        self.__create_task_tasks.discard(task)  # Discard from our set since we are done with it
-        # We just retrieve the eventual exception so that asyncio doesn't complain in case
-        # it's not retrieved somewhere else
-        with contextlib.suppress(asyncio.CancelledError, asyncio.InvalidStateError):
-            task.exception()
 
     async def __create_task_callback(
         self,
@@ -1206,44 +988,8 @@ class Application(
         finally:
             self._mark_for_persistence_update(update=update)
 
-    async def __update_fetcher(self) -> None:
-        # Continuously fetch updates from the queue. Exit only once the signal object is found.
-        while True:
-            update = await self.update_queue.get()
 
-            if update is _STOP_SIGNAL:
-                # For the _STOP_SIGNAL
-                self.update_queue.task_done()
-                return
 
-            _LOGGER.debug("Processing update %s", update)
-
-            if self._update_processor.max_concurrent_updates > 1:
-                # We don't await the below because it has to be run concurrently
-                self.create_task(
-                    self.__process_update_wrapper(update),
-                    update=update,
-                    name=f"Application:{self.bot.id}:process_concurrent_update",
-                )
-            else:
-                await self.__process_update_wrapper(update)
-
-    async def _update_fetcher(self) -> None:
-        try:
-            await self.__update_fetcher()
-        finally:
-            while not self.update_queue.empty():
-                _LOGGER.debug("Dropping pending update: %s", self.update_queue.get_nowait())
-                with contextlib.suppress(ValueError):
-                    # Since we're shutting down here, it's not too bad if we call task_done
-                    # on an empty queue
-                    self.update_queue.task_done()
-
-    async def __process_update_wrapper(self, update: object) -> None:
-        try:
-            await self._update_processor.process_update(update, self.process_update(update))
-        finally:
-            self.update_queue.task_done()
 
     async def process_update(self, update: object) -> None:
         """Processes a single update and marks the update to be updated by the persistence later.
@@ -1262,75 +1008,7 @@ class Application(
         Raises:
             :exc:`RuntimeError`: If the application was not initialized.
         """
-        # Processing updates before initialize() is a problem e.g. if persistence is used
-        self._check_initialized()
-
-        context = None
-        any_blocking = False  # Flag which is set to True if any handler specifies block=True
-
-        # We copy the lists to avoid issues with concurrent modification of the
-        # handlers (groups or handlers in groups) while iterating over it via add/remove_handler.
-        # Currently considered implementation detail as described in docstrings of
-        # add/remove_handler
-        # do *not* use `copy.deepcopy` here, as we don't want to deepcopy the handlers themselves
-        for handlers in [v.copy() for v in self.handlers.values()]:
-            try:
-                # no copy needed b/c we copy above
-                for handler in handlers:
-                    check = handler.check_update(update)  # Should the handler handle this update?
-                    if check is None or check is False:
-                        continue
-
-                    if not context:  # build a context if not already built
-                        try:
-                            context = self.context_types.context.from_update(update, self)
-                        except Exception as exc:
-                            _LOGGER.critical(
-                                (
-                                    "Error while building CallbackContext for update %s. "
-                                    "Update will not be processed."
-                                ),
-                                update,
-                                exc_info=exc,
-                            )
-                            return
-                        await context.refresh_data()
-                    coroutine: Coroutine = handler.handle_update(update, self, check, context)
-
-                    if not handler.block or (  # if handler is running with block=False,
-                        handler.block is DEFAULT_TRUE
-                        and isinstance(self.bot, ExtBot)
-                        and self.bot.defaults
-                        and not self.bot.defaults.block
-                    ):
-                        self.create_task(
-                            coroutine,
-                            update=update,
-                            name=(
-                                f"Application:{self.bot.id}:process_update_non_blocking:{handler}"
-                            ),
-                        )
-                    else:
-                        any_blocking = True
-                        await coroutine
-                    break  # Only a max of 1 handler per group is handled
-
-            # Stop processing with any other handler.
-            except ApplicationHandlerStop:
-                _LOGGER.debug("Stopping further handlers due to ApplicationHandlerStop")
-                break
-
-            # Dispatch any error.
-            except Exception as exc:
-                if await self.process_error(update=update, error=exc):
-                    _LOGGER.debug("Error handler stopped further handlers.")
-                    break
-
-        if any_blocking:
-            # Only need to mark the update for persistence if there was at least one
-            # blocking handler - the non-blocking handlers mark the update again when finished
-            # (in __create_task_callback)
-            self._mark_for_persistence_update(update=update)
+        pass
 
     def add_handler(self, handler: BaseHandler[Any, CCT, Any], group: int = DEFAULT_GROUP) -> None:
         """Register a handler.
@@ -1373,37 +1051,7 @@ class Application(
             group (:obj:`int`, optional): The group identifier. Default is ``0``.
 
         """
-        # Unfortunately due to circular imports this has to be here
-        # pylint: disable=import-outside-toplevel
-        from telegram.ext._handlers.conversationhandler import ConversationHandler  # noqa: PLC0415
-
-        if not isinstance(handler, BaseHandler):
-            raise TypeError(f"handler is not an instance of {BaseHandler.__name__}")
-        if not isinstance(group, int):
-            raise TypeError("group is not int")
-        if isinstance(handler, ConversationHandler) and handler.persistent and handler.name:
-            if not self.persistence:
-                raise ValueError(
-                    f"ConversationHandler {handler.name} "
-                    "can not be persistent if application has no persistence"
-                )
-            if self._initialized:
-                self.create_task(
-                    self._add_ch_to_persistence(handler),
-                    name=f"Application:{self.bot.id}:add_handler:conversation_handler_after_init",
-                )
-                warn(
-                    "A persistent `ConversationHandler` was passed to `add_handler`, "
-                    "after `Application.initialize` was called. This is discouraged."
-                    "See the docs of `Application.add_handler` for details.",
-                    stacklevel=2,
-                )
-
-        if group not in self.handlers:
-            self.handlers[group] = []
-            self.handlers = dict(sorted(self.handlers.items()))  # lower -> higher groups
-
-        self.handlers[group].append(handler)
+        pass
 
     def add_handlers(
         self,
@@ -1440,28 +1088,7 @@ class Application(
         Raises:
             :exc:`TypeError`: If the combination of arguments is invalid.
         """
-        if isinstance(handlers, dict) and not isinstance(group, DefaultValue):
-            raise TypeError("The `group` argument can only be used with a sequence of handlers.")
-
-        if isinstance(handlers, dict):
-            for handler_group, grp_handlers in handlers.items():
-                if not isinstance(grp_handlers, Sequence):
-                    raise TypeError(
-                        f"Handlers for group {handler_group} must be a sequence of handlers."
-                    )
-
-                for handler in grp_handlers:
-                    self.add_handler(handler, handler_group)
-
-        elif isinstance(handlers, Sequence):
-            for handler in handlers:
-                self.add_handler(handler, DefaultValue.get_value(group))
-
-        else:
-            raise TypeError(
-                "The `handlers` argument must be a sequence of handlers or a "
-                "dictionary where the keys are groups and values are sequences of handlers."
-            )
+        pass
 
     def remove_handler(
         self, handler: BaseHandler[Any, CCT, Any], group: int = DEFAULT_GROUP
@@ -1482,10 +1109,7 @@ class Application(
             group (:obj:`object`, optional): The group identifier. Default is ``0``.
 
         """
-        if handler in self.handlers[group]:
-            self.handlers[group].remove(handler)
-            if not self.handlers[group]:
-                del self.handlers[group]
+        pass
 
     def drop_chat_data(self, chat_id: int) -> None:
         """Drops the corresponding entry from the :attr:`chat_data`. Will also be deleted from
@@ -1568,28 +1192,7 @@ class Application(
         Raises:
             ValueError: Raised if the input is invalid.
         """
-        if message and (old_chat_id or new_chat_id):
-            raise ValueError("Message and chat_id pair are mutually exclusive")
-        if not any((message, old_chat_id, new_chat_id)):
-            raise ValueError("chat_id pair or message must be passed")
-
-        if message:
-            if message.migrate_from_chat_id is None and message.migrate_to_chat_id is None:
-                raise ValueError(
-                    "Invalid message instance. The message must have either "
-                    "`Message.migrate_from_chat_id` or `Message.migrate_to_chat_id`."
-                )
-
-            old_chat_id = message.migrate_from_chat_id or message.chat.id
-            new_chat_id = message.migrate_to_chat_id or message.chat.id
-
-        elif not (isinstance(old_chat_id, int) and isinstance(new_chat_id, int)):
-            raise ValueError("old_chat_id and new_chat_id must be integers")
-
-        self._chat_data[new_chat_id] = self._chat_data[old_chat_id]
-        self.drop_chat_data(old_chat_id)
-
-        self._chat_ids_to_be_updated_in_persistence.add(new_chat_id)
+        pass
         # old_chat_id is marked for deletion by drop_chat_data above
 
     def _mark_for_persistence_update(
@@ -1626,38 +1229,8 @@ class Application(
             user_ids (:obj:`int` | Collection[:obj:`int`], optional): User IDs to mark.
 
         """
-        if chat_ids:
-            if isinstance(chat_ids, int):
-                self._chat_ids_to_be_updated_in_persistence.add(chat_ids)
-            else:
-                self._chat_ids_to_be_updated_in_persistence.update(chat_ids)
-        if user_ids:
-            if isinstance(user_ids, int):
-                self._user_ids_to_be_updated_in_persistence.add(user_ids)
-            else:
-                self._user_ids_to_be_updated_in_persistence.update(user_ids)
+        pass
 
-    async def _persistence_updater(self) -> None:
-        # Update the persistence in regular intervals. Exit only when the stop event has been set
-        while not self.__update_persistence_event.is_set():
-            if not self.persistence:
-                return
-
-            # asyncio synchronization primitives don't accept a timeout argument, it is recommended
-            # to use wait_for instead
-            try:
-                await asyncio.wait_for(
-                    self.__update_persistence_event.wait(),
-                    timeout=self.persistence.update_interval,
-                )
-            except asyncio.TimeoutError:
-                pass
-            else:
-                return
-
-            # putting this *after* the wait_for so we don't immediately update on startup as
-            # that would make little sense
-            await self.update_persistence()
 
     async def update_persistence(self) -> None:
         """Updates :attr:`user_data`, :attr:`chat_data`, :attr:`bot_data` in :attr:`persistence`
@@ -1828,11 +1401,7 @@ class Application(
                 should be awaited before processing the next error handler in
                 :meth:`process_error`. Defaults to :obj:`True`.
         """
-        if callback in self.error_handlers:
-            _LOGGER.warning("The callback is already registered as an error handler. Ignoring.")
-            return
-
-        self.error_handlers[callback] = block
+        pass
 
     def remove_error_handler(self, callback: HandlerCallback[object, CCT, None]) -> None:
         """Removes an error handler.
@@ -1849,7 +1418,7 @@ class Application(
             callback (:term:`coroutine function`): The error handler to remove.
 
         """
-        self.error_handlers.pop(callback, None)
+        pass
 
     async def process_error(
         self,

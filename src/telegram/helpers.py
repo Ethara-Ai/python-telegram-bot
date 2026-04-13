@@ -62,19 +62,7 @@ def escape_markdown(
             documentation <https://core.telegram.org/bots/api#formatting-options>`_ for details.
             Only valid in combination with ``version=2``, will be ignored else.
     """
-    if int(version) == 1:
-        escape_chars = r"_*`["
-    elif int(version) == 2:
-        if entity_type in ["pre", "code"]:
-            escape_chars = r"\`"
-        elif entity_type in ["text_link", "custom_emoji"]:
-            escape_chars = r"\)"
-        else:
-            escape_chars = r"\_*[]()~`>#+-=|{}.!"
-    else:
-        raise ValueError("Markdown version must be either 1 or 2!")
-
-    return re.sub(f"([{re.escape(escape_chars)}])", r"\\\1", text)
+    pass
 
 
 def mention_html(user_id: int | str, name: str) -> str:
@@ -88,7 +76,7 @@ def mention_html(user_id: int | str, name: str) -> str:
     Returns:
         :obj:`str`: The inline mention for the user as HTML.
     """
-    return f'<a href="tg://user?id={user_id}">{escape(name)}</a>'
+    pass
 
 
 def mention_markdown(user_id: int | str, name: str, version: MarkdownVersion = 1) -> str:
@@ -104,10 +92,7 @@ def mention_markdown(user_id: int | str, name: str, version: MarkdownVersion = 1
     Returns:
         :obj:`str`: The inline mention for the user as Markdown.
     """
-    tg_link = f"tg://user?id={user_id}"
-    if version == 1:
-        return f"[{name}]({tg_link})"
-    return f"[{escape_markdown(name, version=version)}]({tg_link})"
+    pass
 
 
 def effective_message_type(entity: "Message | Update") -> str | None:
@@ -124,26 +109,7 @@ def effective_message_type(entity: "Message | Update") -> str | None:
         contains a message that matches one of those types. :obj:`None` otherwise.
 
     """
-    # Importing on file-level yields cyclic Import Errors
-    from telegram import (  # pylint: disable=import-outside-toplevel  # noqa: PLC0415
-        Message,
-        Update,
-    )
-
-    if isinstance(entity, Message):
-        message = entity
-    elif isinstance(entity, Update):
-        if not entity.effective_message:
-            return None
-        message = entity.effective_message
-    else:
-        raise TypeError(f"The entity is neither Message nor Update (got: {type(entity)})")
-
-    for message_type in MessageType:
-        if message[message_type]:
-            return message_type
-
-    return None
+    pass
 
 
 def create_deep_linked_url(
@@ -181,24 +147,4 @@ def create_deep_linked_url(
             contains invalid characters, or if the :paramref:`bot_username` is less than 4
             characters.
     """
-    if bot_username is None or len(bot_username) <= 3:
-        raise ValueError("You must provide a valid bot_username.")
-
-    base_url = f"https://t.me/{bot_username}"
-    if not payload:
-        return base_url
-
-    if len(payload) > MessageLimit.DEEP_LINK_LENGTH:
-        raise ValueError(
-            f"The deep-linking payload must not exceed {MessageLimit.DEEP_LINK_LENGTH} characters."
-        )
-
-    if not re.match(r"^[A-Za-z0-9_-]+$", payload):
-        raise ValueError(
-            "Only the following characters are allowed for deep-linked "
-            "URLs: A-Z, a-z, 0-9, _ and -"
-        )
-
-    key = "startgroup" if group else "start"
-
-    return f"{base_url}?{key}={payload}"
+    pass

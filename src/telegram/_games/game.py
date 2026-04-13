@@ -154,13 +154,7 @@ class Game(TelegramObject):
             RuntimeError: If this game has no text.
 
         """
-        if not self.text:
-            raise RuntimeError("This Game has no 'text'.")
-
-        entity_text = self.text.encode(TextEncoding.UTF_16_LE)
-        entity_text = entity_text[entity.offset * 2 : (entity.offset + entity.length) * 2]
-
-        return entity_text.decode(TextEncoding.UTF_16_LE)
+        pass
 
     def parse_text_entities(self, types: list[str] | None = None) -> dict[MessageEntity, str]:
         """
@@ -185,11 +179,4 @@ class Game(TelegramObject):
             the text that belongs to them, calculated based on UTF-16 codepoints.
 
         """
-        if types is None:
-            types = MessageEntity.ALL_TYPES
-
-        return {
-            entity: self.parse_text_entity(entity)
-            for entity in self.text_entities
-            if entity.type in types
-        }
+        pass

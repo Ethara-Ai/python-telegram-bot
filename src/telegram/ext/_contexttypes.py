@@ -203,25 +203,25 @@ class ContextTypes(Generic[CCT, UD, CD, BD]):
         """The type of the ``context`` argument of all (error-)handler callbacks and job
         callbacks.
         """
-        return self._context  # type: ignore[return-value]
+        pass
 
     @property
     def bot_data(self) -> type[BD]:
         """The type of :attr:`context.bot_data <CallbackContext.bot_data>` of all (error-)handler
         callbacks and job callbacks.
         """
-        return self._bot_data  # type: ignore[return-value]
+        pass
 
     @property
     def chat_data(self) -> type[CD]:
         """The type of :attr:`context.chat_data <CallbackContext.chat_data>` of all (error-)handler
         callbacks and job callbacks.
         """
-        return self._chat_data  # type: ignore[return-value]
+        pass
 
     @property
     def user_data(self) -> type[UD]:
         """The type of :attr:`context.user_data <CallbackContext.user_data>` of all (error-)handler
         callbacks and job callbacks.
         """
-        return self._user_data  # type: ignore[return-value]
+        pass

@@ -236,15 +236,7 @@ def get_zone_info(tz: str) -> zoneinfo.ZoneInfo:
     """Wrapper around the `ZoneInfo` constructor with slightly more helpful error message
     in case tzdata is not installed.
     """
-    try:
-        return zoneinfo.ZoneInfo(tz)
-    except zoneinfo.ZoneInfoNotFoundError as err:
-        raise zoneinfo.ZoneInfoNotFoundError(
-            f"No time zone found with key {tz}. "
-            "Make sure to use a valid time zone name and "
-            f"correctly install the tzdata (https://pypi.org/project/tzdata/) package if "
-            "your system does not provide the time zone data."
-        ) from err
+    pass
 
 
 def get_timedelta_value(value: dtm.timedelta | None, attribute: str) -> int | dtm.timedelta | None:
@@ -269,21 +261,4 @@ def get_timedelta_value(value: dtm.timedelta | None, attribute: str) -> int | dt
         - :obj:`int` if the total seconds is a whole number.
         - float: otherwise.
     """
-    if value is None:
-        return None
-    if os.getenv("PTB_TIMEDELTA", "false").lower().strip() in ["true", "1"]:
-        return value
-    warn(
-        PTBDeprecationWarning(
-            "v22.2",
-            f"In a future major version attribute `{attribute}` will be of type"
-            " `datetime.timedelta`. You can opt-in early by setting `PTB_TIMEDELTA=true`"
-            " or ``PTB_TIMEDELTA=1`` as an environment variable.",
-        ),
-        stacklevel=2,
-    )
-    return (
-        int(seconds)  # type: ignore[return-value]
-        if (seconds := value.total_seconds()).is_integer()
-        else seconds
-    )
+    pass
